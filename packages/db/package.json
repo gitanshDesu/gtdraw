@@ -1,0 +1,24 @@
+{
+    "name": "@gtdraw/db",
+    "version": "1.0.0",
+    "private": "true",
+    "scripts": {
+        "db:generate": "prisma generate",
+        "db:migrate": "prisma migrate dev --skip-generate",
+        "db:deploy": "prisma migrate deploy"
+    },
+    "devDependencies": {
+        "@gtdraw/typescript-config": "workspace:*",
+        "@types/node": "^24.0.3",
+        "prisma": "^6.9.0",
+        "typescript": "^5.8.3"
+    },
+    "dependencies": {
+        "@prisma/client": "^6.9.0",
+        "@prisma/extension-accelerate": "^2.0.1",
+        "dotenv": "^16.5.0"
+    },
+    "exports": {
+        ".": "./src/index.ts"
+    }
+}

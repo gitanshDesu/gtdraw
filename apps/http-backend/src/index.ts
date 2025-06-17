@@ -1,6 +1,7 @@
-import express from "express";
+import app from "./app";
+import { indexRouter } from "./routes/index.route";
 
-const app = express();
+app.use("/api/v1", indexRouter);
 
 app.listen(4000, () => {
   console.log(`server listening on PORT: 4000`);

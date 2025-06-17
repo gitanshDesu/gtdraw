@@ -1,0 +1,23 @@
+{
+    "name": "@gtdraw/common",
+    "version": "1.0.0",
+    "private": "true",
+    "scripts": {
+        "build": "tsc -b",
+        "build:watch":"tsc -b"
+    },
+    "devDependencies": {
+        "@gtdraw/typescript-config": "workspace:*",
+        "@types/node": "^24.0.3",
+        "typescript": "^5.8.3"
+    },
+    "dependencies": {
+        "zod": "^3.25.67"
+    },
+    "exports":{
+        "./*":{
+            "types":"./src/zod/*.ts",
+            "default":"./dist/zod/*.js"
+        }
+    }
+}
