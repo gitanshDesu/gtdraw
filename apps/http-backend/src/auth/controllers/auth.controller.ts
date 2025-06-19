@@ -1,14 +1,17 @@
 import { Request, Response } from "express";
-import { registerUserSchema } from "@gtdraw/common/registerUser";
+import {
+  registerUserSchema,
+  RegisterUserType,
+} from "@gtdraw/common/registerUser";
 import { loginUserSchema } from "@gtdraw/common/loginUser";
 import { asyncHandler } from "@gtdraw/common/utils/asyncHandler";
 import { CustomError } from "@gtdraw/common/utils/CustomError";
 import { ApiResponse } from "@gtdraw/common/utils/ApiResponse";
 import { ControllerType } from "@gtdraw/common/types/index";
-
+import { prisma } from "@gtdraw/db";
 export const registerUser: ControllerType = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { username, fullName, password, email } = req.body;
+    const { username, fullName, password, email }: RegisterUserType = req.body;
     //TODO: Add input validation for req.body using zod.
     const result = registerUserSchema.safeParse(req.body);
     if (!result.success) {
@@ -22,6 +25,15 @@ export const registerUser: ControllerType = asyncHandler(
     }
     // Check in db if user with username or email already exists, if yes return error and if, no create user and move forward
 
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ username: username }, { email: email }],
+      },
+    });
+
+    if (existingUser) {
+      res.status(400).json(new CustomError(400, "User already exists!"));
+    }
     //TODO: Add logic for uploading avatar using S3, if avatar is sent (avatar is optional)
 
     //TODO: Add logic for email verification
