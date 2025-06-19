@@ -1,18 +1,23 @@
-//TODO: Create a custom async handler to handle async request handlers
-
 import { Request, Response } from "express";
 import { registerUserSchema } from "@gtdraw/common/registerUser";
 import { loginUserSchema } from "@gtdraw/common/loginUser";
+import { asyncHandler } from "@gtdraw/common/utils/asyncHandler";
+import { CustomError } from "@gtdraw/common/utils/CustomError";
+import { ApiResponse } from "@gtdraw/common/utils/ApiResponse";
+import { ControllerType } from "@gtdraw/common/types/index";
 
-//TODO: Create custom classes for api and error responses
-export const registerUser = async (req: Request, res: Response) => {
-  try {
+export const registerUser: ControllerType = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
     const { username, fullName, password, email } = req.body;
     //TODO: Add input validation for req.body using zod.
     const result = registerUserSchema.safeParse(req.body);
     if (!result.success) {
       //TODO: Add custom error
-      res.status(400).json();
+      res
+        .status(400)
+        .json(
+          new CustomError(400, `Send Valid Inputs!\n ${result.error.message}`)
+        );
       return;
     }
     // Check in db if user with username or email already exists, if yes return error and if, no create user and move forward
@@ -27,20 +32,22 @@ export const registerUser = async (req: Request, res: Response) => {
 
     //set cookies and send response 201
     res.status(201).json();
-  } catch (error) {
-    console.log("Error Occurred while Registering User:\n", error);
+    return;
   }
-};
+);
 
-export const loginUser = async (req: Request, res: Response) => {
-  try {
+export const loginUser: ControllerType = asyncHandler(
+  async (req: Request, res: Response) => {
     const { username, email, password } = req.body;
 
-    //TODO: Add input validation for req.body using zod
     const result = loginUserSchema.safeParse(req.body);
     if (!result.success) {
       //TODO: Add custom error
-      res.status(400).json();
+      res
+        .status(400)
+        .json(
+          new CustomError(400, `Send Valid Inputs!\n ${result.error.message}`)
+        );
       return;
     }
     // Check if user with username && email exists, if no return 404 else continue
@@ -50,7 +57,7 @@ export const loginUser = async (req: Request, res: Response) => {
     //Create access and refresh tokens
 
     //Set cookies and send response
-  } catch (error) {
-    console.log("Error Occurred while Signing In:\n", error);
+    res.status(200).json();
+    return;
   }
-};
+);

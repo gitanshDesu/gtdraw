@@ -9,12 +9,13 @@
     "start": "node ./dist/index.js"
   },
   "devDependencies": {
+    "@gtdraw/common": "workspace:*",
     "@gtdraw/typescript-config": "workspace:*",
     "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
-    "typescript": "^5.8.3",
-    "@gtdraw/common":"workspace:*"
+    "@types/qs": "^6.14.0",
+    "typescript": "^5.8.3"
   },
   "keywords": [],
   "author": "",
