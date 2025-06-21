@@ -1,3 +1,4 @@
+import { ACCESS_TOKEN_SECRET } from "@gtdraw/common/config";
 import { MiddlewareType } from "@gtdraw/common/types/index";
 import { middlewareHandler } from "@gtdraw/common/utils/asyncHandler";
 import { CustomError } from "@gtdraw/common/utils/CustomError";
@@ -14,7 +15,7 @@ export const verifyUser: MiddlewareType = middlewareHandler(
       return next();
     }
     //TODO: verify using process.env.JWT_SECRET
-    const decodedToken = jwt.verify(token, "secret") as JwtPayload;
+    const decodedToken = jwt.verify(token, ACCESS_TOKEN_SECRET!) as JwtPayload;
 
     if (!decodedToken._id) {
       res.status(401).json(new CustomError(401, "Invalid Access Token!"));

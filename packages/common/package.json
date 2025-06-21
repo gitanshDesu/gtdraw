@@ -8,12 +8,16 @@
     },
     "devDependencies": {
         "@gtdraw/typescript-config": "workspace:*",
+        "@gtdraw/db":"workspace:*",
         "@types/express": "^5.0.3",
+        "@types/jsonwebtoken": "^9.0.10",
         "@types/node": "^24.0.3",
         "typescript": "^5.8.3"
     },
     "dependencies": {
+        "dotenv": "^16.5.0",
         "express": "^5.1.0",
+        "jsonwebtoken": "^9.0.2",
         "zod": "^3.25.67"
     },
     "exports": {
@@ -22,11 +26,15 @@
             "default": "./dist/zod/*.js"
         },
         "./utils/*": {
-            "types":"./src/utils/*.ts",
-            "default":"./dist/utils/*.js"
+            "types": "./src/utils/*.ts",
+            "default": "./dist/utils/*.js"
         },
-        "./types/*":{
-            "types":"./src/types/*.ts"
+        "./types/*": {
+            "types": "./src/types/*.ts"
+        },
+        "./config": {
+            "types": "./src/config/index.ts",
+            "default": "./dist/config/index.js"
         }
     }
 }
