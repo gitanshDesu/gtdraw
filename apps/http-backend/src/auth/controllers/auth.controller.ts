@@ -37,6 +37,7 @@ export const registerUser: ControllerType = asyncHandler(
 
     if (existingUser) {
       res.status(400).json(new CustomError(400, "User already exists!"));
+      return;
     }
     //TODO: Hash Password before saving in DB.
     const newUser = await prisma.user.create({

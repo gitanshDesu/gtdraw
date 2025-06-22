@@ -27,6 +27,7 @@ export const createRoom: ControllerType = asyncHandler(
     });
     if (existingRoom) {
       res.status(400).json(new CustomError(400, "Room with name exists!"));
+      return;
     }
     const newRoom = await prisma.room.create({
       data: {
