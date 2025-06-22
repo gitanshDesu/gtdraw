@@ -38,6 +38,7 @@ export const registerUser: ControllerType = asyncHandler(
     if (existingUser) {
       res.status(400).json(new CustomError(400, "User already exists!"));
     }
+    //TODO: Hash Password before saving in DB.
     const newUser = await prisma.user.create({
       data: {
         username,
@@ -101,12 +102,64 @@ export const loginUser: ControllerType = asyncHandler(
     }
     // Check if user with username && email exists, if no return 404 else continue
 
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        AND: [{ username }, { email }],
+      },
+      select: {
+        username: true,
+        fullName: true,
+        avatar: true,
+        password: true,
+      },
+    });
+
+    if (!existingUser) {
+      res.status(404).json(new CustomError(404, "User Doesn't Exist!"));
+      return;
+    }
+
     //Check if password sent by user is valid, if not return 400 else move on
 
+    //TODO: Hash Passwords, compare hashed passwords
+    if (password !== existingUser.password) {
+      res.status(400).json(new CustomError(400, "Invalid Password!"));
+      return;
+    }
+
     //Create access and refresh tokens
+    const accessToken = await generateAccessToken(existingUser.username);
+    const refreshToken = await generateRefreshToken(existingUser.username);
+
+    await prisma.user.update({
+      where: {
+        username: existingUser.username,
+      },
+      data: {
+        refreshToken,
+      },
+    });
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
 
     //Set cookies and send response
-    res.status(200).json();
+    res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json(
+        new ApiResponse(
+          200,
+          {
+            username: existingUser.username,
+            fullName: existingUser.fullName,
+            avatar: existingUser.avatar,
+          },
+          "User Logged In Successfully!"
+        )
+      );
     return;
   }
 );
