@@ -13,7 +13,8 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/ws": "^8.18.1",
     "typescript": "^5.8.3",
-    "@gtdraw/common":"workspace:*"
+    "@gtdraw/common":"workspace:*",
+    "@gtdraw/db":"workspace:*"
   },
   "keywords": [],
   "author": "",
