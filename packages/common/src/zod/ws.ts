@@ -6,7 +6,7 @@ export const parsedDataSchema = z.object({
     TypeFieldEnums.LEAVE,
     TypeFieldEnums.CHAT,
   ]),
-  roomId: z.string("Room Id is required!"),
+  roomId: z.uuid(),
   message: z.string().optional(),
 });
 

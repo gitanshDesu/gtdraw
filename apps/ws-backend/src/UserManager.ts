@@ -1,3 +1,4 @@
+import { TypeFieldEnums } from "@gtdraw/common/types/index";
 import { CustomError } from "@gtdraw/common/utils/CustomError";
 import { prisma } from "@gtdraw/db";
 import WebSocket from "ws";
@@ -151,7 +152,7 @@ export class UserManager {
         if (user.rooms.includes(roomId)) {
           user.ws.send(
             JSON.stringify({
-              type: "chat",
+              type: TypeFieldEnums.CHAT,
               message,
               roomId,
             })

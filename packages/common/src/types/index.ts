@@ -18,8 +18,15 @@ export type MiddlewareType<T extends Request = Request> = (
   next: NextFunction
 ) => void;
 
+// types related to ws
 export enum TypeFieldEnums {
   JOIN = "join_room",
   LEAVE = "leave_room",
   CHAT = "chat",
 }
+
+export type ChatMessageType = {
+  type: TypeFieldEnums.CHAT;
+  roomId: string;
+  message: string;
+};

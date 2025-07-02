@@ -5,7 +5,9 @@ import { CustomError } from "@gtdraw/common/utils/CustomError";
 import { prisma, User } from "@gtdraw/db";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { ACCESS_TOKEN_SECRET } from "@gtdraw/common/config";
+import { ParsedDataType, parsedDataSchema } from "@gtdraw/common/ws";
 import { UserManager } from "./UserManager";
+import { TypeFieldEnums } from "@gtdraw/common/types/index";
 export class SocketManager {
   private static instance: SocketManager;
   private ws: WebSocket;
@@ -107,8 +109,13 @@ export class SocketManager {
     } else if (Array.isArray(data)) {
       jsonString = Buffer.concat(data).toString("utf-8");
     }
-    const parsedData = JSON.parse(jsonString);
-    if (parsedData.type === "join_room") {
+    const raw: ParsedDataType = JSON.parse(jsonString);
+    const validate = parsedDataSchema.safeParse(raw);
+    if (!validate.success) {
+      throw new CustomError(400, `Send Valid Input:\n ${validate.error}`);
+    }
+    const parsedData: ParsedDataType = validate.data;
+    if (parsedData.type === TypeFieldEnums.JOIN) {
       const ws = this.ws;
       const userId = this.user.getUserId(ws);
       if (!userId) {
@@ -118,7 +125,7 @@ export class SocketManager {
       await this.user.joinRoom(userId, parsedData.roomId);
     }
 
-    if (parsedData.type === "leave_room") {
+    if (parsedData.type === TypeFieldEnums.LEAVE) {
       const userId = this.user.getUserId(this.ws);
       if (!userId) {
         console.error(`Got userId undefined from getUserId method`);
@@ -127,11 +134,14 @@ export class SocketManager {
       await this.user.leaveRoom(userId, parsedData.roomId);
     }
 
-    if (parsedData.type === "chat") {
+    if (parsedData.type === TypeFieldEnums.CHAT) {
       const userId = this.user.getUserId(this.ws);
       if (!userId) {
         console.error(`Got userId undefined from getUserId method`);
         return;
+      }
+      if (!parsedData.message) {
+        throw new CustomError(400, "Message field required!");
       }
       await this.user.sendMessage(
         userId,
