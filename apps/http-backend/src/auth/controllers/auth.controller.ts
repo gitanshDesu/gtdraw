@@ -13,7 +13,9 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "@gtdraw/common/utils/generateTokens";
+import { uploadToS3, getUrlFromS3 } from "@gtdraw/common/utils/S3";
 import { prisma } from "@gtdraw/db";
+import path from "path";
 
 export const registerUser: ControllerType = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -21,7 +23,6 @@ export const registerUser: ControllerType = asyncHandler(
 
     const result = registerUserSchema.safeParse(req.body);
     if (!result.success) {
-      //TODO: Add custom error
       res
         .status(400)
         .json(
@@ -55,11 +56,38 @@ export const registerUser: ControllerType = asyncHandler(
         avatar: true,
       },
     });
-    //TODO: Add logic for uploading avatar using S3, if avatar is sent (avatar is optional)
+
+    // Add logic for uploading avatar using S3, if avatar is sent (avatar is optional)
+    const avatarFileName = req.file?.filename;
+    if (avatarFileName) {
+      const key = avatarFileName + path.extname(req.file?.originalname!);
+
+      const response = await uploadToS3(
+        key,
+        req.file?.path!,
+        req.file?.mimetype!
+      );
+      if (!response) {
+        throw new CustomError(500, "Error Occurred While Uploading Avatar");
+      }
+      const avatarUrl = await getUrlFromS3(key);
+      if (!avatarUrl) {
+        throw new CustomError(
+          500,
+          "Error occurred while getting Pre-Signed URL"
+        );
+      }
+      await prisma.user.update({
+        where: {
+          username,
+        },
+        data: {
+          avatar: avatarUrl,
+        },
+      });
+    }
 
     //TODO: Add logic for email verification
-
-    //set avatar field for new created User,move on
 
     // generate access and refresh token, update refresh token field.
 

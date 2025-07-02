@@ -3,8 +3,64 @@ import { ControllerType } from "@gtdraw/common/types/index";
 import { ApiResponse } from "@gtdraw/common/utils/ApiResponse";
 import { asyncHandler } from "@gtdraw/common/utils/asyncHandler";
 import { CustomError } from "@gtdraw/common/utils/CustomError";
+import {
+  deleteFromS3,
+  getUrlFromS3,
+  uploadToS3,
+} from "@gtdraw/common/utils/S3";
 import { prisma } from "@gtdraw/db";
 import { Request, Response } from "express";
+import path from "path";
+
+export const updateAvatar: ControllerType = asyncHandler(
+  async (req: Request, res: Response) => {
+    //1. Get new Avatar link from req.file (comes from multer)
+    const avatarFileName = req.file?.filename;
+    if (!avatarFileName) {
+      throw new CustomError(400, "Avatar File is Missing!");
+    }
+    //2. Upload the avatar to cloudinary / S3
+    const key = avatarFileName + path.extname(req.file?.originalname!);
+    //2.1 Delete old image from S3
+    const oldAvatarUrl = req.user?.avatar;
+    const oldKey = oldAvatarUrl?.split("?")[0]?.split("/")[3]!;
+    const response = await deleteFromS3(oldKey);
+    if (!response) {
+      throw new CustomError(500, "Error Occurred While Deleting Old Avatar!");
+    }
+    //2.2 Upload new avatar on S3 and get pre-signed URL
+    const uploadResponse = await uploadToS3(
+      key,
+      req.file?.path!,
+      req.file?.mimetype!
+    );
+    if (!uploadResponse) {
+      throw new CustomError(500, "Error Occurred while uploading new Avatar!");
+    }
+    const newAvatarUrl = await getUrlFromS3(key);
+    if (!newAvatarUrl) {
+      throw new CustomError(500, "Error Occurred while getting Avatar URL!");
+    }
+
+    //TODO: Study about pre-signed S3 objects URLs or whatever is the right term. where we get already uploaded images on S3 link from client.
+
+    //3. Update the avatar path in DB.
+    await prisma.user.update({
+      where: {
+        id: req.user?.id,
+      },
+      data: {
+        avatar: newAvatarUrl,
+      },
+    });
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, { newAvatarUrl }, "Avatar Updated Successfully!")
+      );
+    return;
+  }
+);
 
 export const createRoom: ControllerType = asyncHandler(
   async (req: Request, res: Response) => {

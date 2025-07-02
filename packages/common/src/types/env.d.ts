@@ -7,6 +7,9 @@ declare global {
       ACCESS_TOKEN_EXPIRY: ExpiryType;
       REFRESH_TOKEN_EXPIRY: ExpiryType;
       DATABASE_URL: string;
+      ACCESS_KEY: string;
+      SECRET_ACCESS_KEY: string;
+      BUCKET_REGION: string;
     }
   }
 }

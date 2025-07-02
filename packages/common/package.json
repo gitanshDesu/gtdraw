@@ -7,14 +7,16 @@
         "build:watch": "tsc -b"
     },
     "devDependencies": {
+        "@gtdraw/db": "workspace:*",
         "@gtdraw/typescript-config": "workspace:*",
-        "@gtdraw/db":"workspace:*",
         "@types/express": "^5.0.3",
         "@types/jsonwebtoken": "^9.0.10",
         "@types/node": "^24.0.3",
         "typescript": "^5.8.3"
     },
     "dependencies": {
+        "@aws-sdk/client-s3": "^3.840.0",
+        "@aws-sdk/s3-request-presigner": "^3.840.0",
         "dotenv": "^16.5.0",
         "express": "^5.1.0",
         "jsonwebtoken": "^9.0.2",
