@@ -4,6 +4,7 @@ import {
   RegisterUserType,
 } from "@gtdraw/common/registerUser";
 import { loginUserSchema } from "@gtdraw/common/loginUser";
+import { resetPasswordSchema } from "@gtdraw/common/resetPassword";
 import { asyncHandler } from "@gtdraw/common/utils/asyncHandler";
 import { CustomError } from "@gtdraw/common/utils/CustomError";
 import { ApiResponse } from "@gtdraw/common/utils/ApiResponse";
@@ -13,6 +14,7 @@ import {
   generateRefreshToken,
 } from "@gtdraw/common/utils/generateTokens";
 import { prisma } from "@gtdraw/db";
+
 export const registerUser: ControllerType = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { username, fullName, password, email }: RegisterUserType = req.body;
@@ -162,5 +164,79 @@ export const loginUser: ControllerType = asyncHandler(
         )
       );
     return;
+  }
+);
+
+export const resetPassword: ControllerType = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email, oldPassword, newPassword, verifyNewPassword } = req.body;
+
+    const result = resetPasswordSchema.safeParse(req.body);
+
+    if (!result.success) {
+      throw new CustomError(400, `Send Valid Inputs:\n ${result.error}`);
+    }
+
+    //verify that user logged in and the email sent has same email else send error
+    if (req.user?.email !== email) {
+      console.error(`User sent email and logged in user email doesn't match`);
+      throw new CustomError(400, "Send valid Email!");
+    }
+
+    //TODO: Send send verification code mail to reset password on email and then proceed.
+
+    // compare oldPassword with req.user.password
+    //TODO: User bcrypt to compare hashed password
+
+    if (req.user?.password !== oldPassword) {
+      throw new CustomError(400, "Send Valid Password!");
+    }
+
+    //confirm newPassword and verifyNewPassword are same
+    if (newPassword !== verifyNewPassword) {
+      throw new CustomError(400, "Confirm Password not same!");
+    }
+
+    //TODO: hash new password and update password field in db.
+    await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        password: newPassword,
+      },
+    });
+    res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password Updated Successfully!"));
+    return;
+  }
+);
+
+export const logout: ControllerType = asyncHandler(
+  async (req: Request, res: Response) => {
+    //clear user cookies, set them to ""
+    //set refreshToken undefined in userDB
+    if (!req.user) {
+      console.error(`req.user doesn't exist!`);
+      throw new CustomError(401, "Unauthroized request!");
+    }
+    await prisma.user.update({
+      where: {
+        id: req.user.id,
+      },
+      data: {
+        refreshToken: undefined,
+      },
+    });
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+    res
+      .status(200)
+      .clearCookie("accessToken", options)
+      .clearCookie("refreshToken", options)
+      .json(new ApiResponse(200, {}, "User logged out successfully!"));
   }
 );

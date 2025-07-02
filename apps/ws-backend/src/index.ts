@@ -31,7 +31,7 @@ wss.on("connection", function connection(ws, request) {
 
   userInstance.addUser(userId, ws);
   socketInstance.emitMessage();
-  socketInstance.disconnet();
+  socketInstance.disconnect();
 });
 
 server.listen(8080, () => {

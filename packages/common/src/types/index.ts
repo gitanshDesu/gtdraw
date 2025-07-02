@@ -17,3 +17,9 @@ export type MiddlewareType<T extends Request = Request> = (
   res: Response,
   next: NextFunction
 ) => void;
+
+export enum TypeFieldEnums {
+  JOIN = "join_room",
+  LEAVE = "leave_room",
+  CHAT = "chat",
+}

@@ -141,7 +141,7 @@ export class SocketManager {
     }
   }
 
-  public disconnet() {
+  public disconnect() {
     this.ws.on("close", () => {
       const userId = this.user.getUserId(this.ws);
       const isUserRemoved = this.user.removeUser(userId!);
