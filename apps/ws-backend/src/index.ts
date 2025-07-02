@@ -2,38 +2,45 @@ import { WebSocketServer } from "ws";
 import http from "http";
 import { SocketManager } from "./SocketManager";
 import { UserManager } from "./UserManager";
+import { QueueManager } from "@gtdraw/queue/QueueManager";
+import dotenv from "dotenv";
+import path from "path";
+import { CustomError } from "@gtdraw/common/utils/CustomError";
 
-const server = http.createServer();
-
-const wss = new WebSocketServer({
-  server,
+dotenv.config({
+  path: path.resolve(process.cwd(), ".env"),
 });
-const userInstance = UserManager.getInstance();
+//TODO: Handle queue close connection on server shut down logic
+async function main() {
+  const server = http.createServer();
 
-wss.on("connection", function connection(ws, request) {
-  //TODO: Instead of query params, figure to get token via cookies(if possible) or else header
-  const socketInstance = SocketManager.getInstance(ws, request);
-  // const user =  verifyCookies(ws, request); // Test this later
+  const wss = new WebSocketServer({
+    server,
+  });
+  const userInstance = UserManager.getInstance();
+  const queue = QueueManager.getInstance();
+  await queue.connect();
+  await queue.assertQueue();
 
-  const url = request.url;
-  if (!url) {
-    ws.close();
-    //TODO: Throw custom Error
-    return;
-  }
-  const queryParams = new URLSearchParams(url?.split("?")[1]);
-  const token = queryParams.get("token");
-  const userId = socketInstance.checkUser(token!);
-  if (userId == null) {
-    ws.close();
-    return;
-  }
+  wss.on("connection", async function connection(ws, request) {
+    const socketInstance = SocketManager.getInstance(ws, request);
+    const user = await socketInstance.verifyCookies();
+    const userId = user?.id;
+    if (userId == null) {
+      ws.close();
+      return;
+    }
 
-  userInstance.addUser(userId, ws);
-  socketInstance.emitMessage();
-  socketInstance.disconnect();
-});
+    userInstance.addUser(userId, ws);
+    socketInstance.emitMessage();
+    socketInstance.disconnect();
+  });
+  const PORT = process.env.PORT || 8080;
+  server.listen(PORT, () => {
+    console.log("Server is running on Port ", PORT);
+  });
+}
 
-server.listen(8080, () => {
-  console.log("Server is running on Port 8080");
-});
+main().catch((err) =>
+  console.error(`Error Occurred in wss startup file:\n ${err}`)
+);

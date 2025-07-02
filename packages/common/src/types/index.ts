@@ -25,6 +25,12 @@ export enum TypeFieldEnums {
   CHAT = "chat",
 }
 
+export type QueueMessageType = {
+  userId: string;
+  roomId: string;
+  message: string;
+};
+
 export type ChatMessageType = {
   type: TypeFieldEnums.CHAT;
   roomId: string;

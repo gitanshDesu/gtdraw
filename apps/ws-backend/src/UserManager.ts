@@ -1,6 +1,7 @@
 import { TypeFieldEnums } from "@gtdraw/common/types/index";
 import { CustomError } from "@gtdraw/common/utils/CustomError";
 import { prisma } from "@gtdraw/db";
+import { QueueManager } from "@gtdraw/queue/QueueManager";
 import WebSocket from "ws";
 export interface User {
   ws: WebSocket;
@@ -10,8 +11,10 @@ export interface User {
 export class UserManager {
   private static instance: UserManager;
   private users: Map<string, User>;
+  private queue: QueueManager;
   private constructor() {
     this.users = new Map<string, User>();
+    this.queue = QueueManager.getInstance();
   }
 
   public static getInstance(): UserManager {
@@ -140,13 +143,7 @@ export class UserManager {
 
       // Now, before broadcasting message in room save in DB
       //TODO: Add queuing logic to reduce latency for broadcasting messages
-      const chat = await prisma.chat.create({
-        data: {
-          userId,
-          roomId,
-          message,
-        },
-      });
+      this.queue.push({ userId, roomId, message });
       //Broadcast message to each user in room
       this.users.forEach((user) => {
         if (user.rooms.includes(roomId)) {
