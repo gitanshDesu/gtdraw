@@ -14,6 +14,7 @@ import {
   generateRefreshToken,
 } from "@gtdraw/common/utils/generateTokens";
 import { uploadToS3, getUrlFromS3 } from "@gtdraw/common/utils/S3";
+import { hash, isPassword } from "@gtdraw/common/utils/password";
 import { prisma } from "@gtdraw/db";
 import path from "path";
 
@@ -42,13 +43,14 @@ export const registerUser: ControllerType = asyncHandler(
       res.status(400).json(new CustomError(400, "User already exists!"));
       return;
     }
-    //TODO: Hash Password before saving in DB.
+    //Hash Password before saving in DB.
+    const hashedPass = await hash(password);
     const newUser = await prisma.user.create({
       data: {
         username,
         fullName,
         email,
-        password,
+        password: hashedPass,
       },
       select: {
         username: true,
@@ -214,9 +216,9 @@ export const resetPassword: ControllerType = asyncHandler(
     //TODO: Send send verification code mail to reset password on email and then proceed.
 
     // compare oldPassword with req.user.password
-    //TODO: User bcrypt to compare hashed password
-
-    if (req.user?.password !== oldPassword) {
+    //Use bcrypt to compare hashed password
+    const isPass = await isPassword(oldPassword, req.user?.password!);
+    if (!isPass) {
       throw new CustomError(400, "Send Valid Password!");
     }
 
@@ -225,13 +227,14 @@ export const resetPassword: ControllerType = asyncHandler(
       throw new CustomError(400, "Confirm Password not same!");
     }
 
-    //TODO: hash new password and update password field in db.
+    // hash new password and update password field in db.
+    const hashNewPass = await hash(newPassword);
     await prisma.user.update({
       where: {
         email,
       },
       data: {
-        password: newPassword,
+        password: hashNewPass,
       },
     });
     res
