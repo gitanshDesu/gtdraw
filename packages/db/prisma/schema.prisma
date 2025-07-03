@@ -20,6 +20,9 @@ model User {
   password String
   avatar String?
   refreshToken String?
+  verificationCode String?
+  verificationCodeExpiry DateTime?
+  isVerified Boolean @default(false)
   rooms Room[]
   chats Chat[]
 }
