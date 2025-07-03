@@ -17,6 +17,7 @@ export const resetPasswordSchema = z.object({
     .trim()
     .min(6, "Password should be at least 6 characters long!")
     .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])((?=.*\W)|(?=.*_))^[^ ]+$/),
+  verificationCode: z.string().min(8),
 });
 
 export type resetPasswordType = z.infer<typeof resetPasswordSchema>;

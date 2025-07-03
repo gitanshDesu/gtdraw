@@ -10,6 +10,7 @@ declare global {
       ACCESS_KEY: string;
       SECRET_ACCESS_KEY: string;
       BUCKET_REGION: string;
+      RESEND_API_KEY: string;
     }
   }
 }

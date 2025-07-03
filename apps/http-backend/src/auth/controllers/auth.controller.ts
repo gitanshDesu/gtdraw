@@ -5,10 +5,11 @@ import {
 } from "@gtdraw/common/registerUser";
 import { loginUserSchema } from "@gtdraw/common/loginUser";
 import { resetPasswordSchema } from "@gtdraw/common/resetPassword";
+import { resetRequestSchema } from "@gtdraw/common/requestReset";
 import { asyncHandler } from "@gtdraw/common/utils/asyncHandler";
 import { CustomError } from "@gtdraw/common/utils/CustomError";
 import { ApiResponse } from "@gtdraw/common/utils/ApiResponse";
-import { ControllerType } from "@gtdraw/common/types/index";
+import { ControllerType, MailType } from "@gtdraw/common/types/index";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -17,6 +18,8 @@ import { uploadToS3, getUrlFromS3 } from "@gtdraw/common/utils/S3";
 import { hash, isPassword } from "@gtdraw/common/utils/password";
 import { prisma } from "@gtdraw/db";
 import path from "path";
+import { sendMail } from "@gtdraw/common/utils/email";
+import { verifyEmailRequestSchema } from "@gtdraw/common/verifyEmailRequest";
 
 export const registerUser: ControllerType = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -144,6 +147,7 @@ export const loginUser: ControllerType = asyncHandler(
         fullName: true,
         avatar: true,
         password: true,
+        isVerified: true,
       },
     });
 
@@ -151,11 +155,16 @@ export const loginUser: ControllerType = asyncHandler(
       res.status(404).json(new CustomError(404, "User Doesn't Exist!"));
       return;
     }
+    //TODO: Check if email is verified or not if not don't let login
+    if (!existingUser.isVerified) {
+      throw new CustomError(401, "User is not verified!");
+    }
 
     //Check if password sent by user is valid, if not return 400 else move on
 
-    //TODO: Hash Passwords, compare hashed passwords
-    if (password !== existingUser.password) {
+    //Hash Passwords, compare hashed passwords
+    const isPass = await isPassword(password, existingUser.password);
+    if (!isPass) {
       res.status(400).json(new CustomError(400, "Invalid Password!"));
       return;
     }
@@ -199,7 +208,13 @@ export const loginUser: ControllerType = asyncHandler(
 
 export const resetPassword: ControllerType = asyncHandler(
   async (req: Request, res: Response) => {
-    const { email, oldPassword, newPassword, verifyNewPassword } = req.body;
+    const {
+      email,
+      oldPassword,
+      newPassword,
+      verifyNewPassword,
+      verificationCode,
+    } = req.body;
 
     const result = resetPasswordSchema.safeParse(req.body);
 
@@ -213,7 +228,28 @@ export const resetPassword: ControllerType = asyncHandler(
       throw new CustomError(400, "Send valid Email!");
     }
 
-    //TODO: Send send verification code mail to reset password on email and then proceed.
+    //if email is not verified return 401
+    if (!req.user?.isVerified) {
+      throw new CustomError(401, "User is not verified, verify your email!");
+    }
+
+    //Sent verification code mail to reset password on email,verify it and then proceed.
+    if (!req.user?.verificationCode || !req.user?.verificationCodeExpiry) {
+      console.error(
+        "req.user has null verification code or verificationExpiry!"
+      );
+      throw new CustomError(
+        500,
+        "verificationCode or verificationCodeExipry not set!"
+      );
+    }
+    if (
+      req.user?.verificationCode !== verificationCode ||
+      req.user?.verificationCodeExpiry?.getTime() < Date.now()
+    ) {
+      throw new CustomError(400, `Invalid Verification Code!`);
+      //TODO: Handle in this case to again send verification code (rate-limit needed here to avoid spoofing and ddos)
+    }
 
     // compare oldPassword with req.user.password
     //Use bcrypt to compare hashed password
@@ -235,11 +271,128 @@ export const resetPassword: ControllerType = asyncHandler(
       },
       data: {
         password: hashNewPass,
+        verificationCode: null,
+        verificationCodeExpiry: null,
       },
     });
     res
       .status(200)
       .json(new ApiResponse(200, {}, "Password Updated Successfully!"));
+    return;
+  }
+);
+
+export const verifyEmail: ControllerType = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { verificationCode } = req.body;
+    if (!verificationCode) {
+      throw new CustomError(400, `Verification Code is required!`);
+    }
+    if (typeof verificationCode !== "string") {
+      throw new CustomError(400, `Verification Code must be string!`);
+    }
+    //TODO: Add rate-limiting to avoid spoofing
+    if (!req.user?.verificationCode || !req.user?.verificationCodeExpiry) {
+      console.error(
+        `User must have verification code and verification code expiry field, either of field might be null`
+      );
+      res
+        .status(500)
+        .json(
+          new CustomError(
+            500,
+            `Verification code and Verification code expiry fields null`
+          )
+        );
+      return;
+    }
+    if (
+      req.user?.verificationCode !== verificationCode ||
+      req.user?.verificationCodeExpiry.getTime() < Date.now()
+    ) {
+      throw new CustomError(400, "Invalid Verification Code");
+    }
+    await prisma.user.update({
+      where: {
+        id: req.user?.id,
+      },
+      data: {
+        verificationCode: null,
+        verificationCodeExpiry: null,
+        isVerified: true,
+      },
+    });
+    res
+      .status(200)
+      .json(new ApiResponse(200, {}, `Email Verified Successfully!`));
+  }
+);
+
+export const resetRequest: ControllerType = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+    const result = resetRequestSchema.safeParse(req.body);
+    if (!result.success) {
+      throw new CustomError(
+        400,
+        `Send Valid Inputs:\n ${result.error.message}`
+      );
+    }
+    if (!req.user?.email === email) {
+      throw new CustomError(400, "Send valid email!");
+    }
+    if (!req.user?.isVerified) {
+      throw new CustomError(401, "User email not verified, verify your email!");
+    }
+    const response = await sendMail(email, MailType.RESET);
+    if (response) {
+      throw new CustomError(
+        500,
+        `Error Occurred while sending mail to request reset verification Code!`
+      );
+    }
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          {},
+          "Verification Code to reset password sent successfully!"
+        )
+      );
+    return;
+  }
+);
+
+//Use this end point when user doesn't verify email at signup (TODO: Add checks at each controller to only let user with verified emails to access resources)
+export const verifyEmailRequest: ControllerType = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+    const result = verifyEmailRequestSchema.safeParse(req.body);
+
+    if (!result.success) {
+      throw new CustomError(400, `Send Valid Input ${result.error.message}`);
+    }
+    if (!req.user?.email === email) {
+      throw new CustomError(400, `Send Valid Email!`);
+    }
+
+    const response = await sendMail(email, MailType.VERIFY);
+    if (!response) {
+      throw new CustomError(
+        500,
+        "Error Occurred while sending mail to verify!"
+      );
+    }
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          {},
+          "Verification Code to Verify Email Sent Successfully!"
+        )
+      );
     return;
   }
 );

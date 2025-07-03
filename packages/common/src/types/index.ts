@@ -36,3 +36,10 @@ export type ChatMessageType = {
   roomId: string;
   message: string;
 };
+
+//types related to email
+
+export enum MailType {
+  VERIFY = "VERIFY",
+  RESET = "RESET",
+}

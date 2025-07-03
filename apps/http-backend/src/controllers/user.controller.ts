@@ -14,6 +14,12 @@ import path from "path";
 
 export const updateAvatar: ControllerType = asyncHandler(
   async (req: Request, res: Response) => {
+    if (!req.user?.isVerified) {
+      throw new CustomError(
+        401,
+        "User is not verified, please verify your email!"
+      );
+    }
     //1. Get new Avatar link from req.file (comes from multer)
     const avatarFileName = req.file?.filename;
     if (!avatarFileName) {
@@ -64,6 +70,12 @@ export const updateAvatar: ControllerType = asyncHandler(
 
 export const createRoom: ControllerType = asyncHandler(
   async (req: Request, res: Response) => {
+    if (!req.user?.isVerified) {
+      throw new CustomError(
+        401,
+        "User is not verified, please verify your email!"
+      );
+    }
     const { name } = req.body;
     const result = createRoomSchema.safeParse(req.body);
     if (!result.success) {
@@ -101,6 +113,12 @@ export const createRoom: ControllerType = asyncHandler(
 
 export const getChats: ControllerType = asyncHandler(
   async (req: Request, res: Response) => {
+    if (!req.user?.isVerified) {
+      throw new CustomError(
+        401,
+        "User is not verified, please verify your email!"
+      );
+    }
     const roomId = req.params;
     const room = await prisma.room.findFirst({
       where: {
