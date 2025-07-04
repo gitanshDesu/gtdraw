@@ -23,8 +23,6 @@ import { verifyEmailRequestSchema } from "@gtdraw/common/verifyEmailRequest";
 
 export const registerUser: ControllerType = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { username, fullName, password, email }: RegisterUserType = req.body;
-
     const result = registerUserSchema.safeParse(req.body);
     if (!result.success) {
       res
@@ -34,11 +32,12 @@ export const registerUser: ControllerType = asyncHandler(
         );
       return;
     }
+    const { username, fullName, email, password } = result.data;
     // Check in db if user with username or email already exists, if yes return error and if, no create user and move forward
 
     const existingUser = await prisma.user.findFirst({
       where: {
-        OR: [{ username: username }, { email: email }],
+        OR: [{ username }, { email }],
       },
     });
 
@@ -47,7 +46,7 @@ export const registerUser: ControllerType = asyncHandler(
       return;
     }
     //Hash Password before saving in DB.
-    const hashedPass = await hash(password);
+    const hashedPass = await hash(password.trim());
     const newUser = await prisma.user.create({
       data: {
         username,
@@ -92,7 +91,15 @@ export const registerUser: ControllerType = asyncHandler(
       });
     }
 
-    //TODO: Add logic for email verification
+    //Add logic for email verification
+    const response = await sendMail(email, MailType.VERIFY);
+    if (!response) {
+      //TODO: Handle logic, when mail fails (decide whether to send a new mail from here immediately or handle sparately!)
+      throw new CustomError(
+        500,
+        `Error Occurred while sending mail to verify user!`
+      );
+    }
 
     // generate access and refresh token, update refresh token field.
 
@@ -124,8 +131,6 @@ export const registerUser: ControllerType = asyncHandler(
 
 export const loginUser: ControllerType = asyncHandler(
   async (req: Request, res: Response) => {
-    const { username, email, password } = req.body;
-
     const result = loginUserSchema.safeParse(req.body);
     if (!result.success) {
       //TODO: Add custom error
@@ -136,6 +141,7 @@ export const loginUser: ControllerType = asyncHandler(
         );
       return;
     }
+    const { username, email, password } = result.data;
     // Check if user with username && email exists, if no return 404 else continue
 
     const existingUser = await prisma.user.findFirst({
@@ -208,19 +214,19 @@ export const loginUser: ControllerType = asyncHandler(
 
 export const resetPassword: ControllerType = asyncHandler(
   async (req: Request, res: Response) => {
+    const result = resetPasswordSchema.safeParse(req.body);
+
+    if (!result.success) {
+      throw new CustomError(400, `Send Valid Inputs:\n ${result.error}`);
+    }
+
     const {
       email,
       oldPassword,
       newPassword,
       verifyNewPassword,
       verificationCode,
-    } = req.body;
-
-    const result = resetPasswordSchema.safeParse(req.body);
-
-    if (!result.success) {
-      throw new CustomError(400, `Send Valid Inputs:\n ${result.error}`);
-    }
+    } = result.data;
 
     //verify that user logged in and the email sent has same email else send error
     if (req.user?.email !== email) {
@@ -285,10 +291,10 @@ export const resetPassword: ControllerType = asyncHandler(
 export const verifyEmail: ControllerType = asyncHandler(
   async (req: Request, res: Response) => {
     const { verificationCode } = req.body;
-    if (!verificationCode) {
+    if (!verificationCode.trim()) {
       throw new CustomError(400, `Verification Code is required!`);
     }
-    if (typeof verificationCode !== "string") {
+    if (typeof verificationCode.trim() !== "string") {
       throw new CustomError(400, `Verification Code must be string!`);
     }
     //TODO: Add rate-limiting to avoid spoofing
@@ -307,7 +313,7 @@ export const verifyEmail: ControllerType = asyncHandler(
       return;
     }
     if (
-      req.user?.verificationCode !== verificationCode ||
+      req.user?.verificationCode !== verificationCode.trim() ||
       req.user?.verificationCodeExpiry.getTime() < Date.now()
     ) {
       throw new CustomError(400, "Invalid Verification Code");
@@ -330,15 +336,16 @@ export const verifyEmail: ControllerType = asyncHandler(
 
 export const resetRequest: ControllerType = asyncHandler(
   async (req: Request, res: Response) => {
-    const { email } = req.body;
     const result = resetRequestSchema.safeParse(req.body);
+
     if (!result.success) {
       throw new CustomError(
         400,
         `Send Valid Inputs:\n ${result.error.message}`
       );
     }
-    if (!req.user?.email === email) {
+    const { email } = result.data;
+    if (req.user?.email !== email) {
       throw new CustomError(400, "Send valid email!");
     }
     if (!req.user?.isVerified) {
@@ -367,13 +374,13 @@ export const resetRequest: ControllerType = asyncHandler(
 //Use this end point when user doesn't verify email at signup (TODO: Add checks at each controller to only let user with verified emails to access resources)
 export const verifyEmailRequest: ControllerType = asyncHandler(
   async (req: Request, res: Response) => {
-    const { email } = req.body;
     const result = verifyEmailRequestSchema.safeParse(req.body);
 
     if (!result.success) {
       throw new CustomError(400, `Send Valid Input ${result.error.message}`);
     }
-    if (!req.user?.email === email) {
+    const { email } = result.data;
+    if (req.user?.email !== email) {
       throw new CustomError(400, `Send Valid Email!`);
     }
 

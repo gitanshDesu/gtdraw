@@ -76,7 +76,6 @@ export const createRoom: ControllerType = asyncHandler(
         "User is not verified, please verify your email!"
       );
     }
-    const { name } = req.body;
     const result = createRoomSchema.safeParse(req.body);
     if (!result.success) {
       //TODO: Throw Custom Error
@@ -87,6 +86,7 @@ export const createRoom: ControllerType = asyncHandler(
         );
       return;
     }
+    const { name } = result.data;
     //TODO: Slugify name
     const existingRoom = await prisma.room.findFirst({
       where: {
