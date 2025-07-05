@@ -2,6 +2,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import "@gtdraw/ui/globals.css";
 import { Providers } from "@/components/providers";
+import { UserStoreProvider } from "@/providers/user-store-provider";
+import { TanstackQueryProvider } from "@/providers/tanstack-query-provider";
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -23,7 +25,11 @@ export default function RootLayout({
       <body
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}
       >
-        <Providers>{children}</Providers>
+        <UserStoreProvider>
+          <TanstackQueryProvider>
+            <Providers>{children}</Providers>
+          </TanstackQueryProvider>
+        </UserStoreProvider>
       </body>
     </html>
   );

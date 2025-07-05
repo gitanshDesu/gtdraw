@@ -1,6 +1,13 @@
 {
   "extends": "@gtdraw/typescript-config/nextjs.json",
   "compilerOptions": {
+     "lib": ["dom", "dom.iterable", "esnext"],
+    "skipLibCheck": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true,
     "plugins": [
       {
         "name": "next"
