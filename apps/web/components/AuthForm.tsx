@@ -7,19 +7,41 @@ import {
   FormLabel,
 } from "@gtdraw/ui/components/form";
 import { Input } from "@gtdraw/ui/components/input";
-import {
-  registerUserSchema,
-  RegisterUserType,
-} from "@gtdraw/common/registerUser";
+import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginUserSchema, LoginUserType } from "@gtdraw/common/loginUser";
 import { Button } from "@gtdraw/ui/components/button";
 import { useUserStore } from "@/providers/user-store-provider";
 import axios from "axios";
-
+import { useRouter } from "next/navigation";
+import { Label } from "@gtdraw/ui/components/label";
 export function RegisterForm() {
-  const registerSchema = registerUserSchema;
+  const router = useRouter();
+  const registerSchema = z.object({
+    username: z.string({ message: "User Name field is required" }).trim(),
+    fullName: z.string({ message: "Full Name field is required!" }).trim(),
+    email: z
+      .string()
+      .email({ message: "Send Valid Email As Input" })
+      .trim()
+      .toLowerCase(),
+    password: z
+      .string()
+      .trim()
+      .min(6, "Password should be at least 6 characters long!")
+      .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])((?=.*\W)|(?=.*_))^[^ ]+$/),
+    avatar: z
+      .any()
+      .refine(
+        (file: FileList | undefined) => {
+          return !file || file.length <= 1; // either undefined or single file
+        },
+        { message: "You can only upload one file" }
+      )
+      .optional(),
+  });
+  type RegisterUserType = z.infer<typeof registerSchema>;
   const form = useForm<RegisterUserType>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -34,7 +56,18 @@ export function RegisterForm() {
   );
 
   const onSubmitRegisterHanlder = (data: RegisterUserType) => {
-    console.log(data);
+    // console.log(data);
+    const avatarFileList = form.getValues("avatar");
+    const avatarFile = avatarFileList?.[0]; // Optional chaining ensures no error if undefined
+
+    const formData = new FormData();
+    formData.append("username", data.username);
+    formData.append("fullName", data.fullName);
+    formData.append("email", data.email);
+    formData.append("password", data.password);
+    if (avatarFile) {
+      formData.append("avatar", avatarFile); // Append only if provided
+    }
     //update state
     registerUser(data);
 
@@ -44,7 +77,7 @@ export function RegisterForm() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="flex items-center  text-white md:min-w-[20rem] max-h-full py-4 px-8 rounded-md">
+      <div className="flex items-center  dark:text-white md:min-w-[20rem] max-h-full py-4 px-8 rounded-md">
         <Form {...form}>
           <div>
             <div className="w-full max-w-sm flex items-center">
@@ -58,7 +91,8 @@ export function RegisterForm() {
               </div>
 
               <Button
-                className="hidden sm:block font-semibold text-[1rem] cursor-pointer text-white relative bottom-7"
+                className="hidden sm:block font-semibold text-[1rem] cursor-pointer dark:text-white relative bottom-7"
+                onClick={() => router.push("/login")}
                 variant="link"
               >
                 Log In
@@ -155,6 +189,16 @@ export function RegisterForm() {
                     )}
                   />
                 </div>
+                <div className="pb-4 flex flex-col justify-center">
+                  <Label htmlFor="picture" className="font-semibold pb-2">
+                    Avatar
+                  </Label>
+                  <Input
+                    id="picture"
+                    type="file"
+                    {...form.register("avatar")}
+                  ></Input>
+                </div>
               </div>
               <div className="flex flex-col items-center justify-center min-w-[15rem] sm:min-w-[22rem]">
                 <Button
@@ -192,6 +236,7 @@ export function RegisterForm() {
 }
 
 export function LoginForm() {
+  const router = useRouter();
   const loginSchema = loginUserSchema;
   const form = useForm<LoginUserType>({
     resolver: zodResolver(loginSchema),
@@ -214,7 +259,7 @@ export function LoginForm() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="flex items-center  text-white md:min-w-[20rem] max-h-full py-4 px-8 rounded-md">
+      <div className="flex items-center  dark:text-white md:min-w-[20rem] max-h-full py-4 px-8 rounded-md">
         <Form {...form}>
           <div>
             <div className="w-full max-w-sm flex items-center">
@@ -228,7 +273,8 @@ export function LoginForm() {
               </div>
 
               <Button
-                className="hidden sm:block font-semibold text-[1rem] cursor-pointer text-white relative bottom-7"
+                className="hidden sm:block font-semibold text-[1rem] cursor-pointer dark:text-white relative bottom-7"
+                onClick={() => router.push("/register")}
                 variant="link"
               >
                 Register?
