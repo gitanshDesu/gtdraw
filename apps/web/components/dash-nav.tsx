@@ -23,7 +23,7 @@ export default function DashNav() {
           Joined
         </Button>
       </div>
-      <div className="flex justify-end gap-4 md:gap-2 md:-mr-2 md:pr-2 md:ml-2 lg:gap-6 lg:-ml-4">
+      <div className="flex justify-end gap-4 md:gap-2 md:-mr-2 md:pr-2 md:ml-2 lg:-mr-2 lg:gap-6 lg:-ml-4">
         <Button
           variant={"secondary"}
           className="px-2 -mr-1 md:px-1.5 gap-0.5 lg:gap-2 flex justify-center cursor-pointer lg:px-2.5 "
