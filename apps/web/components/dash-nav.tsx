@@ -2,23 +2,31 @@ import { Button } from "@gtdraw/ui/components/button";
 
 export default function DashNav() {
   return (
-    <div className="flex justify-end sm:gap-16 border-[1px] dark:border-white border-gray-400 rounded-md shadow-md dark:shadow-gray-200 py-2.5 px-2.5 sm:px-4 md:gap-8">
-      <div className="flex  sm:justify-between gap-2 sm:gap-8 md:gap-4 ">
-        <Button variant={"ghost"} className="cursor-pointer ">
+    <div className="flex justify-end sm:gap-16 border-[1px] dark:border-white border-gray-400 rounded-md shadow-md dark:shadow-gray-200 py-2 px-2 sm:px-4 md:gap-4 md:px-2.5 lg:gap-16 lg:px-4">
+      <div className="flex  sm:justify-between gap-1 sm:gap-8 md:gap-2 md:-mr-4 lg:mr-2  lg:gap-8">
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer px-1 -mr-2 md:px-2 md:-mr-4 lg:px-2"
+        >
           All
         </Button>
-        <Button variant={"ghost"}>Recents</Button>
-        <Button variant={"ghost"} className="mr-4 sm:mr-0 md:mr-1">
+        <Button variant={"ghost"} className="-mr-4">
+          Recents
+        </Button>
+        <Button
+          variant={"ghost"}
+          className="mr-4 -ml-2 sm:mr-0   md:px-2 md:-ml-4"
+        >
           Created By Me
         </Button>
-        <Button variant={"ghost"} className="hidden sm:block">
+        <Button variant={"ghost"} className="hidden sm:block md:px-2 md:-ml-2">
           Joined
         </Button>
       </div>
-      <div className="flex justify-end gap-4 md:gap-4">
+      <div className="flex justify-end gap-4 md:gap-2 md:-mr-2 md:pr-2 md:ml-2 lg:gap-6 lg:-ml-4">
         <Button
           variant={"secondary"}
-          className="px-2  gap-1 flex justify-center"
+          className="px-2 -mr-1 md:px-1.5 gap-0.5 lg:gap-2 flex justify-center cursor-pointer lg:px-2.5 "
         >
           <div>
             <CreateIcon />
@@ -27,7 +35,7 @@ export default function DashNav() {
         </Button>
         <Button
           variant={"default"}
-          className="px-2.5 sm:px-3 sm:gap-2 flex justify-center"
+          className="px-2  sm:px-3 md:gap-0.5 md:px-1.5 sm:gap-2 lg:gap-2 lg:px-3 flex justify-center cursor-pointer"
         >
           <div>
             <LinkIcon />
