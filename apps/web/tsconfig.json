@@ -16,7 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@gtdraw/ui/*": ["../../packages/ui/src/*"]
+      "@gtdraw/ui/*": ["../../packages/ui/src/*"],
+      "@gtdraw/common/*":["../../packages/common/src/*"]
     }
   },
   "include": [

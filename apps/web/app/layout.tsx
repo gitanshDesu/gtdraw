@@ -5,9 +5,7 @@ import { Providers } from "@/components/providers";
 import { UserStoreProvider } from "@/providers/user-store-provider";
 import { TanstackQueryProvider } from "@/providers/tanstack-query-provider";
 import { ModeToggle } from "@/components/DarkModeToggle";
-import { SidebarProvider, SidebarTrigger } from "@gtdraw/ui/components/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-
+import { Toaster } from "@gtdraw/ui/components/sonner";
 const fontSans = Geist({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -36,6 +34,7 @@ export default function RootLayout({
               </div>
 
               {children}
+              <Toaster />
             </Providers>
           </TanstackQueryProvider>
         </UserStoreProvider>

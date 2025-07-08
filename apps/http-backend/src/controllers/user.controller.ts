@@ -30,10 +30,7 @@ export const updateAvatar: ControllerType = asyncHandler(
     //2.1 Delete old image from S3
     const oldAvatarUrl = req.user?.avatar;
     const oldKey = oldAvatarUrl?.split("?")[0]?.split("/")[3]!;
-    const response = await deleteFromS3(oldKey);
-    if (!response) {
-      throw new CustomError(500, "Error Occurred While Deleting Old Avatar!");
-    }
+
     //2.2 Upload new avatar on S3 and get pre-signed URL
     const uploadResponse = await uploadToS3(
       key,
@@ -59,6 +56,11 @@ export const updateAvatar: ControllerType = asyncHandler(
         avatar: newAvatarUrl,
       },
     });
+    //after url is updated successfully then delete old Avatar from S3
+    const response = await deleteFromS3(oldKey);
+    if (!response) {
+      throw new CustomError(500, "Error Occurred While Deleting Old Avatar!");
+    }
     res
       .status(200)
       .json(

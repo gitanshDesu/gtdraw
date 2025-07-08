@@ -8,7 +8,6 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const digits = "23456789"; // avoid numbers 0,1 which can be misread.
 
-// we will be only use alphabets in lowercase (avoid using both lowercase and uppercase)
 const alphabets = "abcdefghijkmnpqrstABCDEFGHJKLMNPQRSTUVWXYZ"; // avoid alphabets which can be misread
 
 const specialChars = "#!&@";

@@ -16,6 +16,11 @@ import { useUserStore } from "@/providers/user-store-provider";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Label } from "@gtdraw/ui/components/label";
+import { toast } from "sonner";
+import { useState } from "react";
+import VerifyCode from "./verify-code";
+import { MailType } from "@gtdraw/common/types";
+
 export function RegisterForm() {
   const router = useRouter();
   const registerSchema = z.object({
@@ -51,6 +56,7 @@ export function RegisterForm() {
       password: "",
     },
   });
+  const [showVerify, setShowVerify] = useState(false);
   const { username, fullName, email, password, registerUser } = useUserStore(
     (state) => state
   );
@@ -204,6 +210,15 @@ export function RegisterForm() {
                 <Button
                   className="mb-4 min-w-full col-span-6 cursor-pointer"
                   type="submit"
+                  onClick={() => {
+                    toast("Event has been created", {
+                      description: "Test Description",
+                      action: {
+                        label: "Verify",
+                        onClick: () => setShowVerify(true),
+                      },
+                    });
+                  }}
                 >
                   Submit
                 </Button>
@@ -230,6 +245,13 @@ export function RegisterForm() {
             </form>
           </div>
         </Form>
+        {showVerify ? (
+          <VerifyCode
+            type={MailType.VERIFY}
+            open={showVerify}
+            onOpenChange={setShowVerify}
+          />
+        ) : null}
       </div>
     </div>
   );
