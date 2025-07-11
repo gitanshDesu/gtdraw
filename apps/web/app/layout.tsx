@@ -34,7 +34,7 @@ export default function RootLayout({
               </div>
 
               {children}
-              <Toaster />
+              <Toaster position="top-center" />
             </Providers>
           </TanstackQueryProvider>
         </UserStoreProvider>

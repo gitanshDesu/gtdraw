@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import VerifyCode from "./verify-code";
 import { MailType } from "@gtdraw/common/types";
+import ResetPass from "./reset-password";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -57,6 +58,7 @@ export function RegisterForm() {
     },
   });
   const [showVerify, setShowVerify] = useState(false);
+  const [showForgotPass, setShowForgotPass] = useState(false);
   const { username, fullName, email, password, registerUser } = useUserStore(
     (state) => state
   );
@@ -177,12 +179,13 @@ export function RegisterForm() {
                           >
                             Password
                           </FormLabel>
-                          <a
-                            href="#"
-                            className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                          <Button
+                            onClick={() => setShowForgotPass(true)}
+                            variant="link"
+                            className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer"
                           >
                             Forgot your password?
-                          </a>
+                          </Button>
                         </div>
                         <FormControl>
                           <Input
@@ -211,13 +214,17 @@ export function RegisterForm() {
                   className="mb-4 min-w-full col-span-6 cursor-pointer"
                   type="submit"
                   onClick={() => {
-                    toast("Event has been created", {
-                      description: "Test Description",
-                      action: {
-                        label: "Verify",
-                        onClick: () => setShowVerify(true),
-                      },
-                    });
+                    toast(
+                      "Verification Code To Verify Email Sent Successfully!",
+                      {
+                        description:
+                          "An Email with a Verification Code has been sent on User's Email!",
+                        action: {
+                          label: "Verify",
+                          onClick: () => setShowVerify(true),
+                        },
+                      }
+                    );
                   }}
                 >
                   Submit
@@ -252,6 +259,9 @@ export function RegisterForm() {
             onOpenChange={setShowVerify}
           />
         ) : null}
+        {showForgotPass ? (
+          <ResetPass open={showForgotPass} onOpenChange={setShowForgotPass} />
+        ) : null}
       </div>
     </div>
   );
@@ -278,7 +288,7 @@ export function LoginForm() {
 
     //send data to backend
   };
-
+  const [showForgotPass, setShowForgotPass] = useState(false);
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <div className="flex items-center  dark:text-white md:min-w-[20rem] max-h-full py-4 px-8 rounded-md">
@@ -355,12 +365,13 @@ export function LoginForm() {
                           >
                             Password
                           </FormLabel>
-                          <a
-                            href="#"
-                            className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                          <Button
+                            onClick={() => setShowForgotPass(true)}
+                            variant="link"
+                            className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer"
                           >
                             Forgot your password?
-                          </a>
+                          </Button>
                         </div>
                         <FormControl>
                           <Input
@@ -405,6 +416,9 @@ export function LoginForm() {
           </div>
         </Form>
       </div>
+      {showForgotPass ? (
+        <ResetPass open={showForgotPass} onOpenChange={setShowForgotPass} />
+      ) : null}
     </div>
   );
 }

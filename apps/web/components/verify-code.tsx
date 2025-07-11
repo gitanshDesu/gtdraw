@@ -34,7 +34,7 @@ function VerifyEmail({ className }: { className?: string }) {
   return (
     <div className={className}>
       <>
-        <DialogTrigger>Verify</DialogTrigger>
+        {/* <DialogTrigger>Verify</DialogTrigger> */}
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Enter Verification Code</DialogTitle>
@@ -44,7 +44,9 @@ function VerifyEmail({ className }: { className?: string }) {
           </DialogHeader>
           <div>
             <div>
-              <Label htmlFor="code">Verification Code</Label>
+              <Label className="mb-2" htmlFor="code">
+                Verification Code
+              </Label>
               <Input id="code" />
             </div>
           </div>
@@ -64,7 +66,7 @@ function ResetPassword({ className }: { className?: string }) {
   return (
     <div className={className}>
       <>
-        <DialogTrigger>Verify</DialogTrigger>
+        {/* <DialogTrigger>Verify</DialogTrigger> */}
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Enter Verification Code</DialogTitle>
