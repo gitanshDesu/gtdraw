@@ -20,16 +20,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
-import VerifyCode from "./verify-code";
-import { MailType } from "@gtdraw/common/types";
+import { Dispatch, SetStateAction } from "react";
 
 export default function ResetPass({
   open,
   onOpenChange,
+  setShowResetPass,
+  showResetPass,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  setShowResetPass: Dispatch<SetStateAction<boolean>>;
+  showResetPass: boolean;
 }) {
   const resetPassSchema = z.object({
     email: z.string().email(),
@@ -55,10 +57,7 @@ export default function ResetPass({
       confirmNewPassword: "",
     },
   });
-  const [showVerify, setShowVerify] = useState(false);
-  useEffect(() => {
-    console.log("show verify changed to ", showVerify);
-  }, [showVerify]);
+
   return (
     <div>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -92,7 +91,11 @@ export default function ResetPass({
                           Old Password
                         </FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter Old Password" {...field} />
+                          <Input
+                            type="password"
+                            placeholder="Enter Old Password"
+                            {...field}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
@@ -106,7 +109,11 @@ export default function ResetPass({
                           New Password
                         </FormLabel>
                         <FormControl>
-                          <Input placeholder="Set New Password" {...field} />
+                          <Input
+                            type="password"
+                            placeholder="Set New Password"
+                            {...field}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
@@ -121,6 +128,7 @@ export default function ResetPass({
                         </FormLabel>
                         <FormControl>
                           <Input
+                            type="password"
                             placeholder="Confirm New Password"
                             {...field}
                           />
@@ -140,25 +148,21 @@ export default function ResetPass({
               type="submit"
               onClick={() => {
                 onOpenChange(false);
-                setTimeout(() => {
-                  toast.success(
-                    "Verification Code To Verify Email Sent Successfully!",
-                    {
-                      description:
-                        "An Email with a Verification Code has been sent on User's Email!",
-                      action: {
-                        label: "Verify",
-                        onClick: (e) => {
-                          e.preventDefault();
-                          console.log("inside toast");
-                          console.log(showVerify);
-                          setShowVerify(true);
-                        },
+                toast.success(
+                  "Verification Code To Verify Email Sent Successfully!",
+                  {
+                    description:
+                      "An Email with a Verification Code has been sent on User's Email!",
+                    action: {
+                      label: "Verify",
+                      onClick: (e) => {
+                        e.preventDefault();
+                        setShowResetPass(true);
                       },
-                      duration: 5000,
-                    }
-                  );
-                }, 300);
+                    },
+                    duration: 5000,
+                  }
+                );
               }}
               className="cursor-pointer"
             >
@@ -167,13 +171,6 @@ export default function ResetPass({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {showVerify ? (
-        <VerifyCode
-          type={MailType.RESET}
-          open={showVerify}
-          onOpenChange={setShowVerify}
-        />
-      ) : null}
     </div>
   );
 }

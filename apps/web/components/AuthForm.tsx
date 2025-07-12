@@ -59,6 +59,7 @@ export function RegisterForm() {
   });
   const [showVerify, setShowVerify] = useState(false);
   const [showForgotPass, setShowForgotPass] = useState(false);
+  const [showResetPass, setShowResetPass] = useState(false);
   const { username, fullName, email, password, registerUser } = useUserStore(
     (state) => state
   );
@@ -221,8 +222,12 @@ export function RegisterForm() {
                           "An Email with a Verification Code has been sent on User's Email!",
                         action: {
                           label: "Verify",
-                          onClick: () => setShowVerify(true),
+                          onClick: (e) => {
+                            e.preventDefault();
+                            setShowVerify(true);
+                          },
                         },
+                        duration: 5000,
                       }
                     );
                   }}
@@ -260,7 +265,19 @@ export function RegisterForm() {
           />
         ) : null}
         {showForgotPass ? (
-          <ResetPass open={showForgotPass} onOpenChange={setShowForgotPass} />
+          <ResetPass
+            open={showForgotPass}
+            onOpenChange={setShowForgotPass}
+            setShowResetPass={setShowResetPass}
+            showResetPass={showResetPass}
+          />
+        ) : null}
+        {showResetPass ? (
+          <VerifyCode
+            type={MailType.RESET}
+            open={showResetPass}
+            onOpenChange={setShowResetPass}
+          />
         ) : null}
       </div>
     </div>
@@ -289,6 +306,7 @@ export function LoginForm() {
     //send data to backend
   };
   const [showForgotPass, setShowForgotPass] = useState(false);
+  const [showResetPass, setShowResetPass] = useState(false);
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <div className="flex items-center  dark:text-white md:min-w-[20rem] max-h-full py-4 px-8 rounded-md">
@@ -417,7 +435,19 @@ export function LoginForm() {
         </Form>
       </div>
       {showForgotPass ? (
-        <ResetPass open={showForgotPass} onOpenChange={setShowForgotPass} />
+        <ResetPass
+          open={showForgotPass}
+          onOpenChange={setShowForgotPass}
+          setShowResetPass={setShowResetPass}
+          showResetPass={showResetPass}
+        />
+      ) : null}
+      {showResetPass ? (
+        <VerifyCode
+          type={MailType.RESET}
+          open={showResetPass}
+          onOpenChange={setShowResetPass}
+        />
       ) : null}
     </div>
   );
