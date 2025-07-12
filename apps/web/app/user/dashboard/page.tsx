@@ -1,11 +1,13 @@
+"use client";
 import { AppSidebar } from "@/components/app-sidebar";
 import DashNav from "@/components/dash-nav";
 import Table from "@/components/dash-table";
 import { SidebarProvider, SidebarTrigger } from "@gtdraw/ui/components/sidebar";
+import { useState } from "react";
 
 export default function Dashboard() {
   return (
-    <SidebarProvider className=" min-h-screen min-w-screen">
+    <SidebarProvider defaultOpen={true} className=" min-h-screen min-w-screen">
       <AppSidebar />
       <main>
         <SidebarTrigger className="fixed top-2 left-2" />

@@ -76,7 +76,9 @@ function ResetPassword({ className }: { className?: string }) {
           </DialogHeader>
           <div>
             <div>
-              <Label htmlFor="code">Verification Code</Label>
+              <Label className="mb-2" htmlFor="code">
+                Verification Code
+              </Label>
               <Input id="code" />
             </div>
           </div>
