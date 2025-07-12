@@ -9,8 +9,20 @@ import {
   SidebarHeader,
 } from "@gtdraw/ui/components/sidebar";
 import { LogOut, Plus, Settings, Trash } from "lucide-react";
+import { useState } from "react";
+import UpdateUser from "./update-details";
+import UpdateAvatar from "./update-avatar";
+import AccountDeleteAlert from "./account-delete";
+import ResetPass from "./reset-password";
+import VerifyCode from "./verify-code";
+import { MailType } from "@gtdraw/common/types";
 
 export function AppSidebar() {
+  const [showUpdateAcc, setShowUpdateAcc] = useState(false);
+  const [showUpdateAvatar, setShowUpdateAvatar] = useState(false);
+  const [showAccountDeleteAlert, setShowAccountDeleteAlert] = useState(false);
+  const [showResetPass, setShowResetPass] = useState(false);
+  const [showForgotPass, setShowForgotPass] = useState(false);
   return (
     <Sidebar variant="sidebar" className="md:w-[14rem] lg:w-[16rem]">
       <SidebarHeader>
@@ -49,24 +61,28 @@ export function AppSidebar() {
               <Button
                 variant={"ghost"}
                 className="cursor-pointer flex justify-start gap-1 w-full"
+                onClick={() => setShowUpdateAcc(true)}
               >
                 Update User Details
               </Button>
               <Button
                 variant={"ghost"}
                 className="cursor-pointer flex justify-start gap-1 w-full"
+                onClick={() => setShowUpdateAvatar(true)}
               >
                 Update Avatar
               </Button>
               <Button
                 variant={"ghost"}
                 className="cursor-pointer flex justify-start gap-1 w-full"
+                onClick={() => setShowForgotPass(true)}
               >
                 Reset Password
               </Button>
               <Button
                 variant={"destructive"}
                 className="cursor-pointer flex justify-start gap-1 w-full"
+                onClick={() => setShowAccountDeleteAlert(true)}
               >
                 <Trash size={20} />
                 <div>Delete Account</div>
@@ -83,6 +99,43 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter />
+      {showUpdateAcc ? (
+        <UpdateUser
+          showUpdateAcc={showUpdateAcc}
+          setShowUpdateAcc={setShowUpdateAcc}
+          open={showUpdateAcc}
+          onOpenChange={setShowUpdateAcc}
+        />
+      ) : null}
+      {showUpdateAvatar ? (
+        <UpdateAvatar
+          showUpdateAvatar={showUpdateAvatar}
+          setShowUpdateAvatar={setShowUpdateAvatar}
+          open={showUpdateAvatar}
+          onOpenChange={setShowUpdateAvatar}
+        />
+      ) : null}
+      {showAccountDeleteAlert ? (
+        <AccountDeleteAlert
+          open={showAccountDeleteAlert}
+          onOpenChange={setShowAccountDeleteAlert}
+        />
+      ) : null}
+      {showForgotPass ? (
+        <ResetPass
+          open={showForgotPass}
+          onOpenChange={setShowForgotPass}
+          setShowResetPass={setShowResetPass}
+          showResetPass={showResetPass}
+        />
+      ) : null}
+      {showResetPass ? (
+        <VerifyCode
+          type={MailType.RESET}
+          open={showResetPass}
+          onOpenChange={setShowResetPass}
+        />
+      ) : null}
     </Sidebar>
   );
 }
