@@ -7,7 +7,7 @@ import { useState } from "react";
 
 export default function Dashboard() {
   return (
-    <SidebarProvider defaultOpen={true} className=" min-h-screen min-w-screen">
+    <SidebarProvider className=" min-h-screen min-w-screen">
       <AppSidebar />
       <main>
         <SidebarTrigger className="fixed top-2 left-2" />

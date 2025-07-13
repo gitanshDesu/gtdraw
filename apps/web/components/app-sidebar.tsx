@@ -150,19 +150,21 @@ function SideBarAvatar({
   username?: string;
 }) {
   return (
-    <div className="grid grid-cols-2 p-2 m-2 gap-2">
-      <div className="col-span-1 w-full h-full flex items-center justify-between">
+    <div className="grid grid-cols-2 p-4 gap-3 lg:gap-2 sticky top-0 border-b-[1px] dark:border-b-sidebar-ring min-w-full">
+      <div className="col-span-1 w-full h-full flex items-center justify-center p-2 ">
         {avatar ? (
           <img src={avatar}></img>
         ) : (
-          <div className="flex justify-center items-center text-center font-semibold text-3xl w-2/3 m-[12px] h-full border-[1px]  border-black dark:border-white rounded-full">
+          <div className="flex justify-center items-center text-center font-semibold text-2xl p-5 mx-4 md:mx-0 md:p-5 lg:p-0 w-full h-full border-[1px]  border-black dark:border-sidebar-ring rounded-full lg:text-3xl lg:w-2/3  lg:m-[12px]">
             {fullName.split(" ")[0]![0]?.toUpperCase()}
           </div>
         )}
       </div>
-      <div className="flex flex-col items-center justify-center col-span-1 mt-2 mr-4">
-        <div className="text-left font-semibold text-lg">{fullName}</div>
-        <div className="relative bottom-3 right-1 text-gray-400 pt-2">{`@${username}`}</div>
+      <div className="flex flex-col items-center justify-center col-span-1 mt-2 mr-8 md:mr-4  lg:mr-4">
+        <div className="text-left font-semibold text-md min-w-full lg:text-lg">
+          {fullName}
+        </div>
+        <div className="relative bottom-3 right-2 md:right-1 lg:right-2 text-gray-400 pt-2">{`@${username}`}</div>
       </div>
     </div>
   );

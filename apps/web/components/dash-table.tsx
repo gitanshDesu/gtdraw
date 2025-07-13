@@ -6,7 +6,7 @@ export default function Table() {
       <TableHeader className="pl-32">
         <Column />
       </TableHeader>
-      <Row className="flex sm:gap-96 sm:pl-48 sm:px-16 sm:py-4 border-y-[1px] border-slate-400">
+      <Row className="flex sm:gap-96 sm:pl-48 sm:px-16 sm:py-4 border-y-[1px] border-sidebar-ring">
         <div className="sm:mr-4">
           <RowChild>Rough Work</RowChild>
         </div>
