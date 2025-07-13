@@ -24,15 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased overflow-hidden`}
+        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased overflow-hidden m-0 p-0`}
       >
         <UserStoreProvider>
           <TanstackQueryProvider>
             <Providers>
-              <div className="flex justify-end relative top-4 right-4 sm:top-8 sm:right-8">
-                <ModeToggle />
-              </div>
-
               {children}
               <Toaster position="top-center" />
             </Providers>
