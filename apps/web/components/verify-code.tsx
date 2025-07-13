@@ -66,7 +66,7 @@ function ResetPassword({ className }: { className?: string }) {
   return (
     <div className={className}>
       <>
-        <DialogTrigger>Verify</DialogTrigger>
+        <DialogTrigger></DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Enter Verification Code</DialogTitle>

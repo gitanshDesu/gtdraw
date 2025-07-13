@@ -61,7 +61,7 @@ export default function UpdateAvatar({
   return (
     <div>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogTrigger>Update Avatar </DialogTrigger>
+        <DialogTrigger></DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update Your Avatar</DialogTitle>

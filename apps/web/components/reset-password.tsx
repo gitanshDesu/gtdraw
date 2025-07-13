@@ -61,7 +61,7 @@ export default function ResetPass({
   return (
     <div>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogTrigger>Reset Password</DialogTrigger>
+        <DialogTrigger></DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reset Your Password</DialogTitle>
@@ -74,7 +74,7 @@ export default function ResetPass({
                     control={form.control}
                     name="email"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="pb-4">
                         <FormLabel className="font-semibold">Email</FormLabel>
                         <FormControl>
                           <Input placeholder="johndoe@gmail.com" {...field} />
@@ -86,7 +86,7 @@ export default function ResetPass({
                     control={form.control}
                     name="oldPassword"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="pb-4">
                         <FormLabel className="font-semibold">
                           Old Password
                         </FormLabel>
@@ -104,7 +104,7 @@ export default function ResetPass({
                     control={form.control}
                     name="newPassword"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="pb-4">
                         <FormLabel className="font-semibold">
                           New Password
                         </FormLabel>

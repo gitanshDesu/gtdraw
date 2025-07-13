@@ -47,7 +47,7 @@ export default function UpdateUser({
   return (
     <div>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogTrigger>Update Account Details</DialogTrigger>
+        <DialogTrigger></DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update Your Account Details</DialogTitle>
@@ -60,7 +60,7 @@ export default function UpdateUser({
                     control={form.control}
                     name="username"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="pb-4">
                         <FormLabel className="font-semibold">
                           Username
                         </FormLabel>
