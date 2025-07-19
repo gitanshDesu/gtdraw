@@ -6,10 +6,15 @@ import express, {
   urlencoded,
 } from "express";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import { CustomError } from "@gtdraw/common";
 
 const app: Express = express();
-
+app.use(
+  cors({
+    origin: ["http://localhost:3000"],
+  })
+);
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
 app.use(cookieParser());

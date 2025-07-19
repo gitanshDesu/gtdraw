@@ -5,6 +5,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@gtdraw/ui/components/form";
 import { Input } from "@gtdraw/ui/components/input";
 import { z } from "zod";
@@ -21,33 +22,41 @@ import { useState } from "react";
 import VerifyCode from "./verify-code";
 import { MailType } from "@gtdraw/common/types/";
 import ResetPass from "./reset-password";
+import { cn } from "@gtdraw/ui/lib/utils";
 
 export function RegisterForm() {
   const router = useRouter();
   const registerSchema = z.object({
-    username: z.string({ message: "User Name field is required" }).trim(),
-    fullName: z.string({ message: "Full Name field is required!" }).trim(),
+    username: z
+      .string()
+      .min(1, { message: "User Name field is required!" })
+      .trim(),
+    fullName: z
+      .string()
+      .min(1, { message: "Full Name field is required!" })
+      .trim(),
     email: z
       .string()
-      .email({ message: "Send Valid Email As Input" })
+      .email({ message: "Provide Valid Email Id!" })
       .trim()
       .toLowerCase(),
     password: z
       .string()
       .trim()
       .min(6, "Password should be at least 6 characters long!")
-      .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])((?=.*\W)|(?=.*_))^[^ ]+$/),
+      .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])((?=.*\W)|(?=.*_))^[^ ]+$/, {
+        message:
+          "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character (e.g., !@#$%^&*)",
+      }),
     avatar: z
       .any()
-      .refine(
-        (file: FileList | undefined) => {
-          return !file || file.length <= 1; // either undefined or single file
-        },
-        { message: "You can only upload one file" }
-      )
+      .refine((file: FileList | undefined) => !file || file.length <= 1, {
+        message: "You can only upload one file",
+      })
       .optional(),
   });
   type RegisterUserType = z.infer<typeof registerSchema>;
+
   const form = useForm<RegisterUserType>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -56,236 +65,259 @@ export function RegisterForm() {
       email: "",
       password: "",
     },
+    mode: "onBlur",
+    reValidateMode: "onBlur",
   });
+
+  const {
+    formState: { errors },
+  } = form;
+
   const [showVerify, setShowVerify] = useState(false);
   const [showForgotPass, setShowForgotPass] = useState(false);
   const [showResetPass, setShowResetPass] = useState(false);
+
   const { username, fullName, email, avatar, setRegisterUser } = useUserStore(
     (state) => state
   );
 
   const onSubmitRegisterHanlder = async (data: RegisterUserType) => {
-    // console.log(data);
     const avatarFileList = form.getValues("avatar");
-    const avatarFile = avatarFileList?.[0]; // Optional chaining ensures no error if undefined
+    const avatarFile = avatarFileList?.[0];
 
     const formData = new FormData();
     formData.append("username", data.username);
     formData.append("fullName", data.fullName);
     formData.append("email", data.email);
     formData.append("password", data.password);
-    if (avatarFile) {
-      formData.append("avatar", avatarFile); // Append only if provided
-    }
-    //send data to backend
-    // axios.post("http://localhost:4000/api/v1/register", data); //use tanstack query here
+    if (avatarFile) formData.append("avatar", avatarFile);
+
     const response = await axios.post(
-      `${process.env.BACKEND_URL!}/auth/register`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL!}/auth/register`,
       formData
     );
-    //update state after we receive successful response from post request sent to register user.
+
+    if (response.data.success) {
+      toast("Verification Code To Verify Email Sent Successfully!", {
+        description:
+          "An Email with a Verification Code has been sent on User's Email!",
+        action: {
+          label: "Verify",
+          onClick: (e) => {
+            e.preventDefault();
+            setShowVerify(true);
+          },
+        },
+        duration: 5000,
+      });
+    }
+
     setRegisterUser(response.data);
-    console.log(username);
-    console.log(fullName);
-    console.log(email);
-    console.log(avatar);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="flex items-center  dark:text-white md:min-w-[20rem] max-h-full py-4 px-8 rounded-md">
+    <div className="flex flex-col items-center justify-center min-h-screen px-4">
+      <div className="w-full max-w-md rounded-md py-6 px-4 sm:px-8 bg-white dark:bg-black">
         <Form {...form}>
-          <div>
-            <div className="w-full max-w-sm flex items-center">
-              <div className="sm:grid sm:grid-cols-10">
-                <div className="font-semibold text-center sm:col-span-10 sm:text-left sm:pl-3">
-                  Sign Up to your account
-                </div>
-                <div className="sm:col-span-9 sm:pl-3">
-                  Enter your details below to register your account
-                </div>
-              </div>
-
+          <div className="space-y-6">
+            <div className="text-center sm:text-left">
+              <h2 className="text-lg sm:text-xl font-semibold">
+                Sign Up to your account
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Enter your details below to register your account
+              </p>
               <Button
-                className="hidden sm:block font-semibold text-[1rem] cursor-pointer dark:text-white relative bottom-7"
+                className="hidden sm:inline-block text-sm font-semibold float-right -mt-8 cursor-pointer"
                 onClick={() => router.push("/login")}
                 variant="link"
               >
                 Log In
               </Button>
             </div>
+
             <form
-              className="py-4 flex flex-col items-center min-w-full"
+              className="space-y-4"
               onSubmit={form.handleSubmit(onSubmitRegisterHanlder)}
             >
-              <div className="min-w-[20rem] sm:min-w-[22rem]">
-                <div className="pb-4">
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-semibold">
-                          Username
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="john_doe" {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-semibold">Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            className="bg-white"
-                            placeholder="johndoe@gmail.com"
-                            {...field}
-                            type="email"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
-                  <FormField
-                    control={form.control}
-                    name="fullName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-semibold">
-                          Enter Full Name
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className="bg-white"
-                            placeholder="John Doe"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-center">
-                          <FormLabel
-                            className="font-semibold"
-                            htmlFor="password"
-                          >
-                            Password
-                          </FormLabel>
-                          <Button
-                            onClick={() => setShowForgotPass(true)}
-                            variant="link"
-                            className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer"
-                          >
-                            Forgot your password?
-                          </Button>
-                        </div>
-                        <FormControl>
-                          <Input
-                            placeholder="johnDoe@123456"
-                            {...field}
-                            type="password"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="pb-4 flex flex-col justify-center">
-                  <Label htmlFor="picture" className="font-semibold pb-2">
-                    Avatar
-                  </Label>
-                  <Input
-                    id="picture"
-                    type="file"
-                    {...form.register("avatar")}
-                  ></Input>
-                </div>
+              {/** Username */}
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Username</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="john_doe"
+                        {...field}
+                        autoFocus
+                        autoComplete="on"
+                        autoCorrect="on"
+                        autoSave="on"
+                        className={cn(
+                          "w-full",
+                          errors.username &&
+                            "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
+                        )}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Email */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="johndoe@gmail.com"
+                        {...field}
+                        type="email"
+                        autoComplete="on"
+                        autoSave="on"
+                        autoCorrect="on"
+                        className={cn(
+                          "w-full",
+                          errors.email &&
+                            "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
+                        )}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Full Name */}
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">
+                      Enter Full Name
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="John Doe"
+                        {...field}
+                        className={cn(
+                          "w-full",
+                          errors.fullName &&
+                            "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
+                        )}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Password */}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="font-semibold">Password</FormLabel>
+                      <Button
+                        onClick={() => {
+                          setShowForgotPass(true);
+                        }}
+                        variant="link"
+                        type="button"
+                        className="text-sm underline-offset-4 hover:underline cursor-pointer"
+                      >
+                        Forgot your password?
+                      </Button>
+                    </div>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="johnDoe@123456"
+                        {...field}
+                        className={cn(
+                          "w-full",
+                          errors.password &&
+                            "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
+                        )}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Avatar */}
+              <div>
+                <Label htmlFor="picture" className="font-semibold">
+                  Avatar
+                </Label>
+                <Input
+                  id="picture"
+                  type="file"
+                  {...form.register("avatar")}
+                  className="mt-1"
+                />
               </div>
-              <div className="flex flex-col items-center justify-center min-w-[15rem] sm:min-w-[22rem]">
+
+              {/** Submit */}
+              <Button type="submit" className="w-full">
+                Submit
+              </Button>
+
+              {/** Divider */}
+              <div className="flex items-center gap-4">
+                <div className="h-px flex-1 bg-gray-300" />
+                <span className="text-sm text-gray-500">or</span>
+                <div className="h-px flex-1 bg-gray-300" />
+              </div>
+
+              {/** Login Options */}
+              <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
                 <Button
-                  className="mb-4 min-w-full col-span-6 cursor-pointer"
-                  type="submit"
-                  onClick={() => {
-                    toast(
-                      "Verification Code To Verify Email Sent Successfully!",
-                      {
-                        description:
-                          "An Email with a Verification Code has been sent on User's Email!",
-                        action: {
-                          label: "Verify",
-                          onClick: (e) => {
-                            e.preventDefault();
-                            setShowVerify(true);
-                          },
-                        },
-                        duration: 5000,
-                      }
-                    );
-                  }}
+                  variant="outline"
+                  className="w-full grid-cols-1 sm:hidden"
                 >
-                  Submit
+                  Login with Email
                 </Button>
-                <div className="min-w-full px-4 flex items-center gap-4 mb-3">
-                  <div className="h-px flex-1 bg-gray-300"></div>
-                  <span className="text-sm text-gray-500">or</span>
-                  <div className="h-px flex-1 bg-gray-300"></div>
-                </div>
-                <div className="grid grid-cols-4 gap-2 sm:flex sm:items-center">
-                  <Button
-                    variant="outline"
-                    className="block sm:hidden min-w-full col-span-2 cursor-pointer"
-                  >
-                    Login with Email
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full col-span-2 sm:min-w-[22rem] cursor-pointer"
-                  >
-                    Login with Google
-                  </Button>
-                </div>
+                <Button variant="outline" className="w-full grid-cols-1">
+                  Login with Google
+                </Button>
               </div>
             </form>
           </div>
         </Form>
-        {showVerify ? (
+
+        {showVerify && (
           <VerifyCode
             type={MailType.VERIFY}
             open={showVerify}
             onOpenChange={setShowVerify}
           />
-        ) : null}
-        {showForgotPass ? (
+        )}
+        {showForgotPass && (
           <ResetPass
             open={showForgotPass}
             onOpenChange={setShowForgotPass}
             setShowResetPass={setShowResetPass}
             showResetPass={showResetPass}
           />
-        ) : null}
-        {showResetPass ? (
+        )}
+        {showResetPass && (
           <VerifyCode
             type={MailType.RESET}
             open={showResetPass}
             onOpenChange={setShowResetPass}
           />
-        ) : null}
+        )}
       </div>
     </div>
   );
@@ -301,158 +333,184 @@ export function LoginForm() {
       email: "",
       password: "",
     },
+    mode: "onBlur",
+    reValidateMode: "onBlur",
   });
+  const {
+    formState: { errors },
+  } = form;
   const { username, email, setLoginUser } = useUserStore((state) => state);
 
-  const onSubmitLoginHandler = (data: LoginUserType) => {
+  const onSubmitLoginHandler = async (data: LoginUserType) => {
     //send data to backend
     //update state after we receive success message from post request to login user
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
+      data
+    );
     // loginUser(data);
   };
   const [showForgotPass, setShowForgotPass] = useState(false);
   const [showResetPass, setShowResetPass] = useState(false);
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="flex items-center  dark:text-white md:min-w-[20rem] max-h-full py-4 px-8 rounded-md">
+    <div className="flex flex-col items-center justify-center min-h-screen px-4">
+      <div className="w-full max-w-md rounded-md py-6 px-4 sm:px-8 bg-white dark:bg-black">
         <Form {...form}>
-          <div>
-            <div className="w-full max-w-sm flex items-center">
-              <div className="sm:grid sm:grid-cols-10">
-                <div className="sm:pl-3 font-semibold text-center sm:col-span-10 sm:text-left">
-                  Log In to your account
-                </div>
-                <div className="sm:pl-3 sm:col-span-9">
-                  Enter your details below to log in to your account
-                </div>
-              </div>
-
+          <div className="space-y-6">
+            <div className="text-center sm:text-left">
+              <h2 className="text-lg sm:text-xl font-semibold">
+                Log In to your account
+              </h2>
+              <p className="text-[13px] text-muted-foreground mt-1">
+                Enter your details below to log in to your account
+              </p>
               <Button
-                className="hidden sm:block font-semibold text-[1rem] cursor-pointer dark:text-white relative bottom-7"
+                className="hidden sm:inline-block text-sm font-semibold float-right -mt-8 cursor-pointer"
                 onClick={() => router.push("/register")}
                 variant="link"
+                type="button" //to avoid getting this button to become type=submit
               >
-                Register?
+                Register
               </Button>
             </div>
+
             <form
-              className="py-4 flex flex-col items-center min-w-full"
+              className="space-y-4"
               onSubmit={form.handleSubmit(onSubmitLoginHandler)}
             >
-              <div className="min-w-[20rem] sm:min-w-[22rem]">
-                <div className="pb-4">
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-semibold">
-                          Username
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="john_doe" {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-semibold">Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            className="bg-white"
-                            placeholder="johndoe@gmail.com"
-                            {...field}
-                            type="email"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-center">
-                          <FormLabel
-                            className="font-semibold"
-                            htmlFor="password"
-                          >
-                            Password
-                          </FormLabel>
-                          <Button
-                            onClick={() => setShowForgotPass(true)}
-                            variant="link"
-                            className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer"
-                          >
-                            Forgot your password?
-                          </Button>
-                        </div>
-                        <FormControl>
-                          <Input
-                            placeholder="johnDoe@123456"
-                            {...field}
-                            type="password"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
+              {/** Username */}
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Username</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="john_doe"
+                        {...field}
+                        autoFocus
+                        autoComplete="on"
+                        autoCorrect="on"
+                        autoSave="on"
+                        className={cn(
+                          "w-full",
+                          errors.username &&
+                            "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
+                        )}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Email */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="johndoe@gmail.com"
+                        {...field}
+                        type="email"
+                        autoComplete="on"
+                        autoSave="on"
+                        autoCorrect="on"
+                        className={cn(
+                          "w-full",
+                          errors.email &&
+                            "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
+                        )}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Password */}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="font-semibold">Password</FormLabel>
+                      <Button
+                        onClick={(e) => {
+                          setShowForgotPass(true);
+                        }}
+                        variant="link"
+                        type="button"
+                        className="text-sm underline-offset-4 hover:underline cursor-pointer"
+                      >
+                        Forgot your password?
+                      </Button>
+                    </div>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="johnDoe@123456"
+                        {...field}
+                        className={cn(
+                          "w-full",
+                          errors.password &&
+                            "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
+                        )}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Submit */}
+              <Button type="submit" className="w-full">
+                Submit
+              </Button>
+
+              {/** Divider */}
+              <div className="flex items-center gap-4">
+                <div className="h-px flex-1 bg-gray-300" />
+                <span className="text-sm text-gray-500">or</span>
+                <div className="h-px flex-1 bg-gray-300" />
               </div>
-              <div className="flex flex-col items-center justify-center min-w-[15rem] sm:min-w-[22rem]">
+
+              {/** Login Options */}
+              <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
                 <Button
-                  className="mb-4 min-w-full col-span-6 cursor-pointer"
-                  type="submit"
+                  variant="outline"
+                  className="w-full grid-cols-1 sm:hidden"
                 >
-                  Submit
+                  Register with Email
                 </Button>
-                <div className="min-w-full px-4 flex items-center gap-4 mb-3">
-                  <div className="h-px flex-1 bg-gray-300"></div>
-                  <span className="text-sm text-gray-500">or</span>
-                  <div className="h-px flex-1 bg-gray-300"></div>
-                </div>
-                <div className="grid grid-cols-4 gap-2 sm:flex sm:items-center">
-                  <Button
-                    variant="outline"
-                    className="block sm:hidden min-w-full col-span-2 cursor-pointer"
-                  >
-                    Register with Email
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full col-span-2 sm:min-w-[22rem] cursor-pointer"
-                  >
-                    Login with Google
-                  </Button>
-                </div>
+                <Button variant="outline" className="w-full grid-cols-1">
+                  Login with Google
+                </Button>
               </div>
             </form>
           </div>
         </Form>
+        {showForgotPass && (
+          <ResetPass
+            open={showForgotPass}
+            onOpenChange={setShowForgotPass}
+            setShowResetPass={setShowResetPass}
+            showResetPass={showResetPass}
+          />
+        )}
+        {showResetPass && (
+          <VerifyCode
+            type={MailType.RESET}
+            open={showResetPass}
+            onOpenChange={setShowResetPass}
+          />
+        )}
       </div>
-      {showForgotPass ? (
-        <ResetPass
-          open={showForgotPass}
-          onOpenChange={setShowForgotPass}
-          setShowResetPass={setShowResetPass}
-          showResetPass={showResetPass}
-        />
-      ) : null}
-      {showResetPass ? (
-        <VerifyCode
-          type={MailType.RESET}
-          open={showResetPass}
-          onOpenChange={setShowResetPass}
-        />
-      ) : null}
     </div>
   );
 }
