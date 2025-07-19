@@ -10,7 +10,7 @@ import { Input } from "@gtdraw/ui/components/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginUserSchema, LoginUserType } from "@gtdraw/common/loginUser";
+import { loginUserSchema, LoginUserType } from "@gtdraw/common";
 import { Button } from "@gtdraw/ui/components/button";
 import { useUserStore } from "@/providers/user-store-provider";
 import axios from "axios";
@@ -19,7 +19,7 @@ import { Label } from "@gtdraw/ui/components/label";
 import { toast } from "sonner";
 import { useState } from "react";
 import VerifyCode from "./verify-code";
-import { MailType } from "@gtdraw/common/types";
+import { MailType } from "@gtdraw/common";
 import ResetPass from "./reset-password";
 
 export function RegisterForm() {
@@ -60,11 +60,11 @@ export function RegisterForm() {
   const [showVerify, setShowVerify] = useState(false);
   const [showForgotPass, setShowForgotPass] = useState(false);
   const [showResetPass, setShowResetPass] = useState(false);
-  const { username, fullName, email, password, registerUser } = useUserStore(
+  const { username, fullName, email, avatar, setRegisterUser } = useUserStore(
     (state) => state
   );
 
-  const onSubmitRegisterHanlder = (data: RegisterUserType) => {
+  const onSubmitRegisterHanlder = async (data: RegisterUserType) => {
     // console.log(data);
     const avatarFileList = form.getValues("avatar");
     const avatarFile = avatarFileList?.[0]; // Optional chaining ensures no error if undefined
@@ -77,11 +77,18 @@ export function RegisterForm() {
     if (avatarFile) {
       formData.append("avatar", avatarFile); // Append only if provided
     }
-    //update state
-    registerUser(data);
-
     //send data to backend
     // axios.post("http://localhost:4000/api/v1/register", data); //use tanstack query here
+    const response = await axios.post(
+      `${process.env.BACKEND_URL!}/auth/register`,
+      formData
+    );
+    //update state after we receive successful response from post request sent to register user.
+    setRegisterUser(response.data);
+    console.log(username);
+    console.log(fullName);
+    console.log(email);
+    console.log(avatar);
   };
 
   return (
@@ -295,15 +302,12 @@ export function LoginForm() {
       password: "",
     },
   });
-  const { username, email, password, loginUser } = useUserStore(
-    (state) => state
-  );
+  const { username, email, setLoginUser } = useUserStore((state) => state);
 
   const onSubmitLoginHandler = (data: LoginUserType) => {
-    //update state
-    loginUser(data);
-
     //send data to backend
+    //update state after we receive success message from post request to login user
+    // loginUser(data);
   };
   const [showForgotPass, setShowForgotPass] = useState(false);
   const [showResetPass, setShowResetPass] = useState(false);

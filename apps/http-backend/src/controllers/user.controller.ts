@@ -1,13 +1,9 @@
-import { createRoomSchema } from "@gtdraw/common/createRoom";
-import { ControllerType } from "@gtdraw/common/types/index";
-import { ApiResponse } from "@gtdraw/common/utils/ApiResponse";
-import { asyncHandler } from "@gtdraw/common/utils/asyncHandler";
-import { CustomError } from "@gtdraw/common/utils/CustomError";
-import {
-  deleteFromS3,
-  getUrlFromS3,
-  uploadToS3,
-} from "@gtdraw/common/utils/S3";
+import { createRoomSchema } from "@gtdraw/common";
+import { ControllerType } from "@gtdraw/common";
+import { ApiResponse } from "@gtdraw/common";
+import { asyncHandler } from "@gtdraw/common";
+import { CustomError } from "@gtdraw/common";
+import { deleteFromS3, getUrlFromS3, uploadToS3 } from "@gtdraw/common";
 import { prisma } from "@gtdraw/db";
 import { Request, Response } from "express";
 import path from "path";

@@ -1,6 +1,6 @@
 import amqp from "amqplib";
-import { CustomError } from "@gtdraw/common/utils/CustomError";
-import { QueueMessageType } from "@gtdraw/common/types/index";
+import { CustomError } from "@gtdraw/common";
+import { QueueMessageType } from "@gtdraw/common";
 import { prisma } from "@gtdraw/db";
 
 export class QueueManager {
@@ -18,7 +18,7 @@ export class QueueManager {
 
   public async connect() {
     try {
-      const connection = await amqp.connect(process.env.QUEUE_CONNECTION_URL);
+      const connection = await amqp.connect(process.env.QUEUE_CONNECTION_URL!);
       this.channel = await connection.createChannel();
       return this.channel;
     } catch (error) {
@@ -31,7 +31,9 @@ export class QueueManager {
 
   public async assertQueue() {
     try {
-      await this.channel.assertQueue(process.env.QUEUE_NAME, { durable: true });
+      await this.channel.assertQueue(process.env.QUEUE_NAME!, {
+        durable: true,
+      });
     } catch (error) {
       throw new CustomError(
         500,
@@ -42,7 +44,7 @@ export class QueueManager {
 
   public push(message: QueueMessageType) {
     this.channel.sendToQueue(
-      process.env.QUEUE_NAME,
+      process.env.QUEUE_NAME!,
       Buffer.from(JSON.stringify(message)),
       { persistent: true }
     );
@@ -51,7 +53,7 @@ export class QueueManager {
   public async pop() {
     //Insert in DB and pop()
     try {
-      await this.channel.consume(process.env.QUEUE_NAME, (message) =>
+      await this.channel.consume(process.env.QUEUE_NAME!, (message) =>
         this.handleMessage(message)
       );
     } catch (error) {

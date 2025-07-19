@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import { TypeFieldEnums } from "../types";
+import { TypeFieldEnums } from "../config/commonTypes";
 export const parsedDataSchema = z.object({
   type: z.enum([
     TypeFieldEnums.JOIN,

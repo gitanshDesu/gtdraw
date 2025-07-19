@@ -1,12 +1,12 @@
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { prisma } from "@gtdraw/db";
-import { CustomError } from "./CustomError";
+import { CustomError } from "./CustomError.js";
 import {
   ACCESS_TOKEN_EXPIRY,
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_EXPIRY,
   REFRESH_TOKEN_SECRET,
-} from "../config";
+} from "../config/index.js";
 
 export const generateAccessToken = async (username: string) => {
   try {
@@ -19,7 +19,7 @@ export const generateAccessToken = async (username: string) => {
     const token = jwt.sign(
       { id: currUser?.id, username: currUser?.username },
       ACCESS_TOKEN_SECRET!,
-      { expiresIn: ACCESS_TOKEN_EXPIRY }
+      { expiresIn: ACCESS_TOKEN_EXPIRY! } as SignOptions
     );
     return token;
   } catch (error) {
@@ -40,7 +40,7 @@ export const generateRefreshToken = async (username: string) => {
 
     const token = jwt.sign({ id: currUser?.id }, REFRESH_TOKEN_SECRET!, {
       expiresIn: REFRESH_TOKEN_EXPIRY,
-    });
+    } as SignOptions);
     return token;
   } catch (error) {
     throw new CustomError(

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { MiddlewareType, RequestHandler } from "../types";
+import { MiddlewareType, RequestHandler } from "../config/commonTypes";
 
 export const asyncHandler = <T extends Request = Request>(
   fn: RequestHandler<T>

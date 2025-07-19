@@ -1,3 +1,4 @@
+import path from "path";
 import app from "./app";
 import { indexRouter } from "./routes/index.route";
 

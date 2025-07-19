@@ -1,5 +1,5 @@
-import { TypeFieldEnums } from "@gtdraw/common/types/index";
-import { CustomError } from "@gtdraw/common/utils/CustomError";
+import { TypeFieldEnums } from "@gtdraw/common";
+import { CustomError } from "@gtdraw/common";
 import { prisma } from "@gtdraw/db";
 import { QueueManager } from "@gtdraw/queue/QueueManager";
 import WebSocket from "ws";

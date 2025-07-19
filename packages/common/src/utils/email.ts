@@ -1,10 +1,11 @@
 import { Resend } from "resend";
 import * as crypto from "crypto";
-import { MailType } from "../types";
-import { CustomError } from "./CustomError";
+import { MailType } from "../config/commonTypes";
+import { CustomError } from "./CustomError.js";
 import { prisma } from "@gtdraw/db";
+import { RESEND_API_KEY, RESEND_MAIL } from "../config/index";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(RESEND_API_KEY!);
 
 const digits = "23456789"; // avoid numbers 0,1 which can be misread.
 
@@ -66,7 +67,7 @@ export const sendMail = async (email: string, type: MailType) => {
             `;
 
     const response = await resend.emails.send({
-      from: process.env.RESEND_MAIL!,
+      from: RESEND_MAIL!,
       to: email,
       subject: subject,
       html: html,

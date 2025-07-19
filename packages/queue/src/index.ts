@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import path from "path";
 import { QueueManager } from "./QueueManager";
-import { CustomError } from "@gtdraw/common/utils/CustomError";
+import { CustomError } from "@gtdraw/common";
 
 dotenv.config({
   path: path.resolve(process.cwd(), ".env"),

@@ -6,7 +6,7 @@ import express, {
   urlencoded,
 } from "express";
 import cookieParser from "cookie-parser";
-import { CustomError } from "@gtdraw/common/utils/CustomError";
+import { CustomError } from "@gtdraw/common";
 
 const app: Express = express();
 

@@ -1,7 +1,7 @@
-import { ACCESS_TOKEN_SECRET } from "@gtdraw/common/config";
-import { MiddlewareType } from "@gtdraw/common/types/index";
-import { middlewareHandler } from "@gtdraw/common/utils/asyncHandler";
-import { CustomError } from "@gtdraw/common/utils/CustomError";
+import { ACCESS_TOKEN_SECRET } from "@gtdraw/common";
+import { MiddlewareType } from "@gtdraw/common";
+import { middlewareHandler } from "@gtdraw/common";
+import { CustomError } from "@gtdraw/common";
 import { prisma } from "@gtdraw/db";
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";

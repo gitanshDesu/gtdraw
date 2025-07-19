@@ -6,7 +6,7 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"],
-      "env": ["DATABASE_URL","ACCESS_TOKEN_SECRET","REFRESH_TOKEN_SECRET","ACCESS_TOKEN_EXPIRY","REFRESH_TOKEN_EXPIRY"]
+      "env": ["DATABASE_URL","ACCESS_TOKEN_SECRET","REFRESH_TOKEN_SECRET","ACCESS_TOKEN_EXPIRY","REFRESH_TOKEN_EXPIRY","RESEND_API_KEY"]
     },
     "lint": {
       "dependsOn": ["^lint"]

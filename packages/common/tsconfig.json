@@ -1,7 +1,15 @@
 {
     "extends":"@gtdraw/typescript-config/base.json",
     "compilerOptions": {
-        "rootDir": "./src",
-        "outDir":"./dist"
+        "outDir":"./dist",
+        "resolveJsonModule": true,
+        "declaration": true,
+        "declarationMap": true,
+        "baseUrl": ".",
+    "paths": {
+      "@gtdraw/common/*": ["./src/*"]
     }
+    },
+    "include": ["src","src/config","src/utils","src/zod","src/types"],
+    "exclude": ["node_modules","dist"]
 }

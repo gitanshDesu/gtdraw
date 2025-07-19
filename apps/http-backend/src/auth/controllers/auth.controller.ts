@@ -1,25 +1,19 @@
 import { Request, Response } from "express";
-import {
-  registerUserSchema,
-  RegisterUserType,
-} from "@gtdraw/common/registerUser";
-import { loginUserSchema } from "@gtdraw/common/loginUser";
-import { resetPasswordSchema } from "@gtdraw/common/resetPassword";
-import { resetRequestSchema } from "@gtdraw/common/requestReset";
-import { asyncHandler } from "@gtdraw/common/utils/asyncHandler";
-import { CustomError } from "@gtdraw/common/utils/CustomError";
-import { ApiResponse } from "@gtdraw/common/utils/ApiResponse";
-import { ControllerType, MailType } from "@gtdraw/common/types/index";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-} from "@gtdraw/common/utils/generateTokens";
-import { uploadToS3, getUrlFromS3 } from "@gtdraw/common/utils/S3";
-import { hash, isPassword } from "@gtdraw/common/utils/password";
+import { registerUserSchema } from "@gtdraw/common";
+import { loginUserSchema } from "@gtdraw/common";
+import { resetPasswordSchema } from "@gtdraw/common";
+import { resetRequestSchema } from "@gtdraw/common";
+import { asyncHandler } from "@gtdraw/common";
+import { CustomError } from "@gtdraw/common";
+import { ApiResponse } from "@gtdraw/common";
+import { ControllerType, MailType } from "@gtdraw/common";
+import { generateAccessToken, generateRefreshToken } from "@gtdraw/common";
+import { uploadToS3, getUrlFromS3 } from "@gtdraw/common";
+import { hash, isPassword } from "@gtdraw/common";
 import { prisma } from "@gtdraw/db";
 import path from "path";
-import { sendMail } from "@gtdraw/common/utils/email";
-import { verifyEmailRequestSchema } from "@gtdraw/common/verifyEmailRequest";
+import { sendMail } from "@gtdraw/common";
+import { verifyEmailRequestSchema } from "@gtdraw/common";
 
 export const registerUser: ControllerType = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -58,6 +52,7 @@ export const registerUser: ControllerType = asyncHandler(
         username: true,
         fullName: true,
         avatar: true,
+        email: true, //send email but write logic in fe to only show email to the user whom it belongs
       },
     });
 
@@ -133,7 +128,6 @@ export const loginUser: ControllerType = asyncHandler(
   async (req: Request, res: Response) => {
     const result = loginUserSchema.safeParse(req.body);
     if (!result.success) {
-      //TODO: Add custom error
       res
         .status(400)
         .json(
@@ -154,6 +148,7 @@ export const loginUser: ControllerType = asyncHandler(
         avatar: true,
         password: true,
         isVerified: true,
+        email: true,
       },
     });
 
@@ -204,6 +199,7 @@ export const loginUser: ControllerType = asyncHandler(
             username: existingUser.username,
             fullName: existingUser.fullName,
             avatar: existingUser.avatar,
+            email: existingUser.email,
           },
           "User Logged In Successfully!"
         )

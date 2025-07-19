@@ -25,20 +25,9 @@
         "zod": "^3.25.67"
     },
     "exports": {
-        "./*": {
-            "types": "./src/zod/*.ts",
-            "default": "./dist/zod/*.js"
-        },
-        "./utils/*": {
-            "types": "./src/utils/*.ts",
-            "default": "./dist/utils/*.js"
-        },
-        "./types/*": {
-            "types": "./src/types/*.ts"
-        },
-        "./config": {
-            "types": "./src/config/index.ts",
-            "default": "./dist/config/index.js"
-        }
+    ".": {
+      "types":"./src/index.ts",
+      "default":"./dist/index.js"
     }
+  }
 }

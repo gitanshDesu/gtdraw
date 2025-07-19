@@ -9,12 +9,18 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { readFileSync, unlinkSync } from "fs";
-import { CustomError } from "./CustomError";
+import { CustomError } from "./CustomError.js";
+import {
+  ACCESS_KEY,
+  BUCKET_NAME,
+  BUCKET_REGION,
+  SECRET_ACCESS_KEY,
+} from "../config/index.js";
 
-const bucketName = process.env.BUCKET_NAME!;
-const bucketRegion = process.env.BUCKET_REGION!;
-const accessKey = process.env.ACCESS_KEY!;
-const secretAccessKey = process.env.SECRET_ACCESS_KEY!;
+const bucketName = BUCKET_NAME!;
+const bucketRegion = BUCKET_REGION!;
+const accessKey = ACCESS_KEY!;
+const secretAccessKey = SECRET_ACCESS_KEY!;
 
 const s3 = new S3Client({
   credentials: {

@@ -1,13 +1,13 @@
 import WebSocket from "ws";
 import http from "http";
 import cookie from "cookie";
-import { CustomError } from "@gtdraw/common/utils/CustomError";
+import { CustomError } from "@gtdraw/common";
 import { prisma, User } from "@gtdraw/db";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { ACCESS_TOKEN_SECRET } from "@gtdraw/common/config";
-import { ParsedDataType, parsedDataSchema } from "@gtdraw/common/ws";
+import { ACCESS_TOKEN_SECRET } from "@gtdraw/common";
+import { ParsedDataType, parsedDataSchema } from "@gtdraw/common";
 import { UserManager } from "./UserManager";
-import { TypeFieldEnums } from "@gtdraw/common/types/index";
+import { TypeFieldEnums } from "@gtdraw/common";
 export class SocketManager {
   private static instance: SocketManager;
   private ws: WebSocket;
