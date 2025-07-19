@@ -9,13 +9,13 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { readFileSync, unlinkSync } from "fs";
-import { CustomError } from "./CustomError.js";
+import { CustomError } from "./CustomError";
 import {
   ACCESS_KEY,
   BUCKET_NAME,
   BUCKET_REGION,
   SECRET_ACCESS_KEY,
-} from "../config/index.js";
+} from "../config/index";
 
 const bucketName = BUCKET_NAME!;
 const bucketRegion = BUCKET_REGION!;

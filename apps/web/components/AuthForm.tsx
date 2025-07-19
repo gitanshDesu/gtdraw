@@ -10,7 +10,7 @@ import { Input } from "@gtdraw/ui/components/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginUserSchema, LoginUserType } from "@gtdraw/common";
+import { loginUserSchema, LoginUserType } from "@gtdraw/common/zod/";
 import { Button } from "@gtdraw/ui/components/button";
 import { useUserStore } from "@/providers/user-store-provider";
 import axios from "axios";
@@ -19,7 +19,7 @@ import { Label } from "@gtdraw/ui/components/label";
 import { toast } from "sonner";
 import { useState } from "react";
 import VerifyCode from "./verify-code";
-import { MailType } from "@gtdraw/common";
+import { MailType } from "@gtdraw/common/types/";
 import ResetPass from "./reset-password";
 
 export function RegisterForm() {

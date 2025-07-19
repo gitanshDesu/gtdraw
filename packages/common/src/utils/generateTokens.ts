@@ -1,12 +1,12 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 import { prisma } from "@gtdraw/db";
-import { CustomError } from "./CustomError.js";
+import { CustomError } from "./CustomError";
 import {
   ACCESS_TOKEN_EXPIRY,
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_EXPIRY,
   REFRESH_TOKEN_SECRET,
-} from "../config/index.js";
+} from "../config/index";
 
 export const generateAccessToken = async (username: string) => {
   try {

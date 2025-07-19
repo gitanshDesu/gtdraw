@@ -1,5 +1,5 @@
 "use client";
-import { MailType } from "@gtdraw/common/types/index";
+import { MailType } from "@gtdraw/common/types/";
 import { Button } from "@gtdraw/ui/components/button";
 import {
   Dialog,

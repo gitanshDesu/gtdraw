@@ -17,7 +17,8 @@
     "paths": {
       "@/*": ["./*"],
       "@gtdraw/ui/*": ["../../packages/ui/src/*"],
-      "@gtdraw/common/*":["../../packages/common/src/*"]
+      "@gtdraw/common/types/*":["../../packages/common/src/types/index.ts"],
+      "@gtdraw/common/zod/*":["../../packages/common/src/zod/index.ts"]
     }
   },
   "include": [

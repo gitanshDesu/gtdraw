@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import * as crypto from "crypto";
-import { MailType } from "../config/commonTypes";
-import { CustomError } from "./CustomError.js";
+import { MailType } from "../types/index";
+import { CustomError } from "./CustomError";
 import { prisma } from "@gtdraw/db";
 import { RESEND_API_KEY, RESEND_MAIL } from "../config/index";
 

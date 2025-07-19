@@ -1,18 +1,29 @@
-import { LoginUserType } from "@gtdraw/common/loginUser";
-import { RegisterUserType } from "@gtdraw/common/registerUser";
 import { createStore } from "zustand/vanilla";
 
 export type UserState = {
   username: string;
-  fullName?: string;
+  fullName: string;
   email: string;
-  password: string;
+  avatar?: string;
+};
+
+export type RegisterUserActionData = {
+  fullName: string;
+  username: string;
+  email: string;
+  avatar?: string;
+};
+
+export type LoginUserActionData = {
+  fullName: string;
+  username: string;
+  email: string;
   avatar?: string;
 };
 
 export type UserActions = {
-  registerUser: (data: RegisterUserType) => void;
-  loginUser: (data: LoginUserType) => void;
+  setRegisterUser: (data: RegisterUserActionData) => void;
+  setLoginUser: (data: LoginUserActionData & { avatar: string }) => void;
 };
 
 export const initUserStore = (): UserState => {
@@ -20,7 +31,7 @@ export const initUserStore = (): UserState => {
     username: "",
     fullName: "",
     email: "",
-    password: "",
+    avatar: "",
   };
 };
 
@@ -29,23 +40,21 @@ export type UserStore = UserState & UserActions;
 export const defaultInitState: UserState = {
   username: "",
   fullName: "",
-  password: "",
   email: "",
+  avatar: "",
 };
 
 export const createUserStore = (initState: UserState = defaultInitState) => {
+  //using currying
   return createStore<UserStore>()((set) => ({
     ...initState,
-    registerUser: (data) =>
+    setRegisterUser: (data) =>
       set(() => ({
         ...data,
       })),
-    loginUser: ({ username, password, email }) =>
-      set((state) => ({
-        ...state,
-        username,
-        password,
-        email,
+    setLoginUser: (data) =>
+      set(() => ({
+        ...data,
       })),
   }));
 };
