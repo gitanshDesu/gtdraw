@@ -23,6 +23,7 @@ import VerifyCode from "./verify-code";
 import { MailType } from "@gtdraw/common/types/";
 import ResetPass from "./reset-password";
 import { cn } from "@gtdraw/ui/lib/utils";
+import { Eye, EyeOff } from "lucide-react";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -76,47 +77,68 @@ export function RegisterForm() {
   const [showVerify, setShowVerify] = useState(false);
   const [showForgotPass, setShowForgotPass] = useState(false);
   const [showResetPass, setShowResetPass] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { username, fullName, email, avatar, setRegisterUser } = useUserStore(
     (state) => state
   );
 
   const onSubmitRegisterHanlder = async (data: RegisterUserType) => {
-    const avatarFileList = form.getValues("avatar");
-    const avatarFile = avatarFileList?.[0];
+    try {
+      setLoading(true);
+      const avatarFileList = form.getValues("avatar");
+      const avatarFile = avatarFileList?.[0];
 
-    const formData = new FormData();
-    formData.append("username", data.username);
-    formData.append("fullName", data.fullName);
-    formData.append("email", data.email);
-    formData.append("password", data.password);
-    if (avatarFile) formData.append("avatar", avatarFile);
+      const formData = new FormData();
+      formData.append("username", data.username);
+      formData.append("fullName", data.fullName);
+      formData.append("email", data.email);
+      formData.append("password", data.password);
+      console.log(avatarFile);
+      if (avatarFile) formData.append("avatar", avatarFile);
 
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL!}/auth/register`,
-      formData
-    );
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL!}/auth/register`,
+        formData
+      );
 
-    if (response.data.success) {
-      toast("Verification Code To Verify Email Sent Successfully!", {
-        description:
-          "An Email with a Verification Code has been sent on User's Email!",
-        action: {
-          label: "Verify",
-          onClick: (e) => {
-            e.preventDefault();
-            setShowVerify(true);
+      if (response.data.success) {
+        toast("Verification Code To Verify Email Sent Successfully!", {
+          description:
+            "An Email with a Verification Code has been sent on User's Email!",
+          action: {
+            label: "Verify",
+            onClick: (e) => {
+              e.preventDefault();
+              setShowVerify(true);
+            },
           },
-        },
-        duration: 5000,
-      });
-    }
+          duration: 5000,
+        });
+        setRegisterUser(response.data.data);
+        setLoading(false);
+      } else {
+        toast.error("Sign Up Failed!", {
+          description: response.data.message,
+        });
+      }
 
-    setRegisterUser(response.data);
+      console.log(response.data.data);
+      console.log("Printing User Name: ", username);
+    } catch (error) {
+      toast.error("Sign Up Failed!", {
+        description: `${error}`,
+      });
+      console.log(
+        "Axios Error Occurred while sending Register Request:\n",
+        error
+      );
+    }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4">
+    <div className="fixed inset-0 flex flex-col items-center justify-center min-h-screen px-4 overflow-auto">
       <div className="w-full max-w-md rounded-md py-6 px-4 sm:px-8 bg-white dark:bg-black">
         <Form {...form}>
           <div className="space-y-6">
@@ -239,16 +261,29 @@ export function RegisterForm() {
                       </Button>
                     </div>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="johnDoe@123456"
-                        {...field}
-                        className={cn(
-                          "w-full",
-                          errors.password &&
-                            "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
-                        )}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="johnDoe@123456"
+                          {...field}
+                          className={cn(
+                            "w-full pr-10",
+                            errors.password &&
+                              "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
+                          )}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                        >
+                          {showPassword ? (
+                            <Eye className="w-5 h-5" />
+                          ) : (
+                            <EyeOff className="w-5 h-5" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -269,7 +304,11 @@ export function RegisterForm() {
               </div>
 
               {/** Submit */}
-              <Button type="submit" className="w-full">
+              <Button
+                disabled={loading}
+                type="submit"
+                className="w-full cursor-pointer"
+              >
                 Submit
               </Button>
 
@@ -284,11 +323,15 @@ export function RegisterForm() {
               <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
                 <Button
                   variant="outline"
-                  className="w-full grid-cols-1 sm:hidden"
+                  className="w-full grid-cols-1 sm:hidden cursor-pointer"
+                  onClick={() => router.push("/login")}
                 >
                   Login with Email
                 </Button>
-                <Button variant="outline" className="w-full grid-cols-1">
+                <Button
+                  variant="outline"
+                  className="w-full grid-cols- cursor-pointer"
+                >
                   Login with Google
                 </Button>
               </div>
@@ -348,10 +391,17 @@ export function LoginForm() {
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
       data
     );
+    if (!response.data.success) {
+      toast.error("Sign Up Failed!", {
+        description: "Error Occurred While Registering",
+        duration: 5000,
+      });
+    }
     // loginUser(data);
   };
   const [showForgotPass, setShowForgotPass] = useState(false);
   const [showResetPass, setShowResetPass] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4">
       <div className="w-full max-w-md rounded-md py-6 px-4 sm:px-8 bg-white dark:bg-black">
@@ -452,16 +502,29 @@ export function LoginForm() {
                       </Button>
                     </div>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="johnDoe@123456"
-                        {...field}
-                        className={cn(
-                          "w-full",
-                          errors.password &&
-                            "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
-                        )}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="johnDoe@123456"
+                          {...field}
+                          className={cn(
+                            "w-full pr-10", // Reserve space for icon
+                            errors.password &&
+                              "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
+                          )}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                        >
+                          {showPassword ? (
+                            <Eye className="w-5 h-5" />
+                          ) : (
+                            <EyeOff className="w-5 h-5" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -469,7 +532,7 @@ export function LoginForm() {
               />
 
               {/** Submit */}
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full cursor-pointer">
                 Submit
               </Button>
 
