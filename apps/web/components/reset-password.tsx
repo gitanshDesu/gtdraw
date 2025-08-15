@@ -62,7 +62,7 @@ export default function ResetPass({
     <div>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogTrigger></DialogTrigger>
-        <DialogContent>
+        <DialogContent onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Reset Your Password</DialogTitle>
           </DialogHeader>

@@ -48,7 +48,7 @@ export default function UpdateUser({
     <div>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogTrigger></DialogTrigger>
-        <DialogContent>
+        <DialogContent onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Update Your Account Details</DialogTitle>
           </DialogHeader>

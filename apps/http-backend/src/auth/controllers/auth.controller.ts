@@ -156,7 +156,7 @@ export const loginUser: ControllerType = asyncHandler(
       res.status(404).json(new CustomError(404, "User Doesn't Exist!"));
       return;
     }
-    //TODO: Check if email is verified or not if not don't let login
+    //Check if email is verified or not if not don't let login
     if (!existingUser.isVerified) {
       throw new CustomError(401, "User is not verified!");
     }
@@ -287,10 +287,11 @@ export const resetPassword: ControllerType = asyncHandler(
 export const verifyEmail: ControllerType = asyncHandler(
   async (req: Request, res: Response) => {
     const { verificationCode } = req.body;
-    if (!verificationCode.trim()) {
+
+    if (!verificationCode?.trim()) {
       throw new CustomError(400, `Verification Code is required!`);
     }
-    if (typeof verificationCode.trim() !== "string") {
+    if (typeof verificationCode?.trim() !== "string") {
       throw new CustomError(400, `Verification Code must be string!`);
     }
     //TODO: Add rate-limiting to avoid spoofing

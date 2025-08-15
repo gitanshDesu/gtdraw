@@ -62,7 +62,7 @@ export default function UpdateAvatar({
     <div>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogTrigger></DialogTrigger>
-        <DialogContent>
+        <DialogContent onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Update Your Avatar</DialogTitle>
           </DialogHeader>

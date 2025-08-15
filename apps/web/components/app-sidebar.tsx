@@ -15,7 +15,7 @@ import UpdateAvatar from "./update-avatar";
 import AccountDeleteAlert from "./account-delete";
 import ResetPass from "./reset-password";
 import VerifyCode from "./verify-code";
-import { MailType } from "@gtdraw/common/types";
+import { MailType } from "@gtdraw/common/types/";
 
 export function AppSidebar() {
   const [showUpdateAcc, setShowUpdateAcc] = useState(false);

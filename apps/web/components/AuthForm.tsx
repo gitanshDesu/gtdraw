@@ -18,7 +18,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Label } from "@gtdraw/ui/components/label";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import VerifyCode from "./verify-code";
 import { MailType } from "@gtdraw/common/types/";
 import ResetPass from "./reset-password";
@@ -75,14 +75,23 @@ export function RegisterForm() {
   } = form;
 
   const [showVerify, setShowVerify] = useState(false);
-  const [showForgotPass, setShowForgotPass] = useState(false);
-  const [showResetPass, setShowResetPass] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const { username, fullName, email, avatar, setUser } = useUserStore(
     (state) => state
   );
+
+  const verifyTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  //clean up timer after component unmounts
+  useEffect(() => {
+    return () => {
+      if (verifyTimerRef.current) {
+        clearTimeout(verifyTimerRef.current);
+      }
+    };
+  }, []);
 
   const onSubmitRegisterHanlder = async (data: RegisterUserType) => {
     try {
@@ -100,7 +109,8 @@ export function RegisterForm() {
 
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL!}/auth/register`,
-        formData
+        formData,
+        { withCredentials: true }
       );
 
       if (response.data.success) {
@@ -116,6 +126,12 @@ export function RegisterForm() {
           },
           duration: 5000,
         });
+        if (verifyTimerRef.current) {
+          clearTimeout(verifyTimerRef.current);
+        }
+        verifyTimerRef.current = setTimeout(() => {
+          setShowVerify(true);
+        }, 6000);
         setUser({
           username: response.data.data.username,
           fullName: response.data.data.fullName,
@@ -262,16 +278,6 @@ export function RegisterForm() {
                   <FormItem>
                     <div className="flex items-center justify-between">
                       <FormLabel className="font-semibold">Password</FormLabel>
-                      <Button
-                        onClick={() => {
-                          setShowForgotPass(true);
-                        }}
-                        variant="link"
-                        type="button"
-                        className="text-sm underline-offset-4 hover:underline cursor-pointer"
-                      >
-                        Forgot your password?
-                      </Button>
                     </div>
                     <FormControl>
                       <div className="relative">
@@ -343,7 +349,7 @@ export function RegisterForm() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full grid-cols- cursor-pointer"
+                  className="w-full grid-cols-1 cursor-pointer"
                 >
                   Login with Google
                 </Button>
@@ -357,21 +363,6 @@ export function RegisterForm() {
             type={MailType.VERIFY}
             open={showVerify}
             onOpenChange={setShowVerify}
-          />
-        )}
-        {showForgotPass && (
-          <ResetPass
-            open={showForgotPass}
-            onOpenChange={setShowForgotPass}
-            setShowResetPass={setShowResetPass}
-            showResetPass={showResetPass}
-          />
-        )}
-        {showResetPass && (
-          <VerifyCode
-            type={MailType.RESET}
-            open={showResetPass}
-            onOpenChange={setShowResetPass}
           />
         )}
       </div>
@@ -398,20 +389,31 @@ export function LoginForm() {
   const { username, email, setUser } = useUserStore((state) => state);
 
   const onSubmitLoginHandler = async (data: LoginUserType) => {
-    //send data to backend
-    //update state after we receive success message from post request to login user
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
-      data
-    );
-    if (!response.data.success) {
-      toast.error("Sign Up Failed!", {
-        description: "Error Occurred While Registering",
-        duration: 5000,
-      });
+    try {
+      //send data to backend
+      //update state after we receive success message from post request to login user
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
+        data,
+        { withCredentials: true } //need to set this to true in register and login request to make sure other request which require cookies actually get cookies to send,else they won't have any cookies to send even after they set {withCredentials:true}.
+      );
+      if (!response.data.success) {
+        toast.error("Sign Up Failed!", {
+          description: "Error Occurred While Registering",
+          duration: 5000,
+        });
+      }
+      setUser(response.data.data);
+    } catch (error) {
+      console.error("Error Occurred while Signing in: ", error);
     }
-    // loginUser(data);
   };
+
+  const formData = new FormData();
+  useEffect(() => {
+    console.log("updated store: ", username);
+  }, [formData]);
+
   const [showForgotPass, setShowForgotPass] = useState(false);
   const [showResetPass, setShowResetPass] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

@@ -77,7 +77,7 @@ export const sendMail = async (email: string, type: MailType) => {
     const verificationCodeExpiry = new Date(Date.now() + 3600000);
     await prisma.user.update({
       where: {
-        email,
+        email: email,
       },
       data: {
         verificationCode: verificationCode,
