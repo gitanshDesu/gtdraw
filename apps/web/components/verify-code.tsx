@@ -1,4 +1,5 @@
 "use client";
+import { useResetPassStore } from "@/providers/reset-pass-store-provider";
 import { MailType } from "@gtdraw/common/types/";
 import { Button } from "@gtdraw/ui/components/button";
 import {
@@ -32,7 +33,7 @@ export default function VerifyCode({
       {type === MailType.VERIFY ? (
         <VerifyEmail onOpenChange={onOpenChange} />
       ) : (
-        <ResetPassword />
+        <ResetPassword onOpenChange={onOpenChange} />
       )}
     </Dialog>
   );
@@ -112,7 +113,45 @@ function VerifyEmail({
   );
 }
 
-function ResetPassword({ className }: { className?: string }) {
+function ResetPassword({
+  className,
+  onOpenChange,
+}: {
+  className?: string;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const { email, oldPassword, newPassword, confirmNewPassword } =
+    useResetPassStore((state) => state);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [loading, setLoading] = useState(false);
+  const onClickHandler = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.patch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/reset-password`,
+        {
+          email: email,
+          oldPassword: oldPassword,
+          newPassword: newPassword,
+          verifyNewPassword: confirmNewPassword,
+          verificationCode: inputRef.current?.value,
+        },
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (response.data.success) {
+        onOpenChange!(false);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.log(
+        "Error Occurred while sending Reset Password Patch Request! ",
+        error
+      );
+    }
+  };
   return (
     <div className={className}>
       <>
@@ -129,7 +168,7 @@ function ResetPassword({ className }: { className?: string }) {
               <Label className="mb-2" htmlFor="code">
                 Verification Code
               </Label>
-              <Input id="code" />
+              <Input id="code" ref={inputRef} />
             </div>
           </div>
           <DialogFooter>
@@ -138,7 +177,12 @@ function ResetPassword({ className }: { className?: string }) {
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" className={"cursor-pointer"}>
+            <Button
+              disabled={loading}
+              type="submit"
+              className={"cursor-pointer"}
+              onClick={onClickHandler}
+            >
               Verify
             </Button>
           </DialogFooter>
