@@ -14,13 +14,18 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@gtdraw/ui/components/form";
 import { Input } from "@gtdraw/ui/components/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Dispatch, SetStateAction } from "react";
+import { cn } from "@gtdraw/ui/lib/utils";
+import axios from "axios";
+import { useUserStore } from "@/providers/user-store-provider";
 
+//TODO: Fix logic after I successfully add JS Logic in Dashboard (deferred right now)
 export default function UpdateUser({
   open,
   onOpenChange,
@@ -33,8 +38,8 @@ export default function UpdateUser({
   showUpdateAcc: boolean;
 }) {
   const updateAccountSchema = z.object({
-    username: z.string(),
-    fullName: z.string(),
+    username: z.string().min(2, "username field is required!"),
+    fullName: z.string().min(2, "Full Name field is required!"),
   });
   const form = useForm<z.infer<typeof updateAccountSchema>>({
     resolver: zodResolver(updateAccountSchema),
@@ -42,7 +47,37 @@ export default function UpdateUser({
       username: "",
       fullName: "",
     },
+    mode: "onBlur",
+    reValidateMode: "onBlur",
   });
+
+  const {
+    formState: { errors },
+  } = form;
+
+  const { username, fullName, setUser } = useUserStore((state) => state);
+
+  const onSubmitHandler = async (data: z.infer<typeof updateAccountSchema>) => {
+    try {
+      const response = await axios.patch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/update-account`,
+        data,
+        { withCredentials: true }
+      );
+      if (response.data.success) {
+        setUser({
+          username: response.data.data.username,
+          fullName: response.data.data.fullName,
+        });
+        onOpenChange(false);
+      }
+    } catch (error) {
+      console.log(
+        "Error Occurred while Sending Payload to update user account details! ",
+        error
+      );
+    }
+  };
 
   return (
     <div>
@@ -55,7 +90,10 @@ export default function UpdateUser({
           <div>
             <div>
               <Form {...form}>
-                <form>
+                <form
+                  id="updateAccountDetailsForm"
+                  onSubmit={form.handleSubmit(onSubmitHandler)}
+                >
                   <FormField
                     control={form.control}
                     name="username"
@@ -65,8 +103,21 @@ export default function UpdateUser({
                           Username
                         </FormLabel>
                         <FormControl>
-                          <Input placeholder="@johndoe" {...field} />
+                          <Input
+                            placeholder="@jhondoe"
+                            {...field}
+                            autoFocus
+                            autoComplete="on"
+                            autoCorrect="on"
+                            autoSave="on"
+                            className={cn(
+                              "w-full",
+                              errors.username &&
+                                "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
+                            )}
+                          />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -80,11 +131,20 @@ export default function UpdateUser({
                         </FormLabel>
                         <FormControl>
                           <Input
-                            type="password"
-                            placeholder="Enter Full Name"
+                            placeholder="John Doe"
                             {...field}
+                            autoFocus
+                            autoComplete="on"
+                            autoCorrect="on"
+                            autoSave="on"
+                            className={cn(
+                              "w-full",
+                              errors.fullName &&
+                                "border-destructive ring-1 ring-destructive/50 focus:ring-destructive"
+                            )}
                           />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -97,10 +157,8 @@ export default function UpdateUser({
               <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button
+              form="updateAccountDetailsForm"
               type="submit"
-              onClick={() => {
-                onOpenChange(false);
-              }}
               className="cursor-pointer"
             >
               Update

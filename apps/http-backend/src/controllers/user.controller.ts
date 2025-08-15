@@ -6,6 +6,7 @@ import { CustomError } from "@gtdraw/common";
 import { deleteFromS3, getUrlFromS3, uploadToS3 } from "@gtdraw/common";
 import { prisma } from "@gtdraw/db";
 import { Request, Response } from "express";
+import { updateAccountSchema } from "@gtdraw/common";
 import path from "path";
 
 export const updateAvatar: ControllerType = asyncHandler(
@@ -142,6 +143,55 @@ export const getChats: ControllerType = asyncHandler(
     res
       .status(200)
       .json(new ApiResponse(200, messages, "All Chat messages retrieved!"));
+    return;
+  }
+);
+
+export const updateAccountDetails: ControllerType = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.user?.isVerified) {
+      throw new CustomError(
+        401,
+        "User is not verified, please verify your email!"
+      );
+    }
+
+    const result = updateAccountSchema.safeParse(req.body);
+    if (!result.success) {
+      res
+        .status(400)
+        .json(
+          new CustomError(400, `Send Valid Inputs!\n ${result.error.message}`)
+        );
+      return;
+    }
+    const { username, fullName } = result.data;
+
+    const ifUserNameTaken = await prisma.user.findFirst({
+      where: {
+        username: username,
+      },
+    });
+    if (ifUserNameTaken) {
+      throw new CustomError(409, "User Name Already Taken!");
+    }
+    const updateUser = await prisma.user.update({
+      where: {
+        id: req.user?.id, //can't use username as this is new username so we have to use id
+      },
+      data: {
+        username,
+        fullName,
+      },
+    });
+    if (!updateUser) {
+      throw new CustomError(500, "Error Occurred while updating user details!");
+    }
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, {}, "User Account Details Updated Successfully!")
+      );
     return;
   }
 );

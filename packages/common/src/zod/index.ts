@@ -5,3 +5,4 @@ export * from "./requestReset";
 export * from "./resetPassword";
 export * from "./verifyEmailRequest";
 export * from "./ws";
+export * from "./updateAccount";

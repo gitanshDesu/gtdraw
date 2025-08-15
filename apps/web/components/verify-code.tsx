@@ -144,6 +144,7 @@ function ResetPassword({
       if (response.data.success) {
         onOpenChange!(false);
         setLoading(false);
+        toast.success("Password Updated Successfully!", { duration: 2000 }); //Added logic to display a success toast when password updates successfully!
       }
     } catch (error) {
       console.log(

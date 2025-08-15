@@ -3,6 +3,7 @@ import { verifyUser } from "../auth/middleware/auth.middleware";
 import {
   createRoom,
   getChats,
+  updateAccountDetails,
   updateAvatar,
 } from "../controllers/user.controller";
 import { upload } from "../auth/middleware/multer.middleware";
@@ -15,5 +16,6 @@ router
   .post(verifyUser, upload.single("avatar"), updateAvatar);
 
 router.route("/chats").get(verifyUser, getChats);
+router.route("/update-account").patch(verifyUser, updateAccountDetails);
 
 export { router as userRouter };
