@@ -7,14 +7,7 @@ export type UserState = {
   avatar?: string;
 };
 
-export type RegisterUserActionData = {
-  fullName: string;
-  username: string;
-  email: string;
-  avatar?: string;
-};
-
-export type LoginUserActionData = {
+export type setUserActionData = {
   fullName: string;
   username: string;
   email: string;
@@ -22,8 +15,7 @@ export type LoginUserActionData = {
 };
 
 export type UserActions = {
-  setRegisterUser: (data: RegisterUserActionData) => void;
-  setLoginUser: (data: LoginUserActionData & { avatar: string }) => void;
+  setUser: (data: Partial<setUserActionData>) => void;
 };
 
 export const initUserStore = (): UserState => {
@@ -48,13 +40,11 @@ export const createUserStore = (initState: UserState = defaultInitState) => {
   //using currying
   return createStore<UserStore>()((set) => ({
     ...initState,
-    setRegisterUser: (data) =>
-      set(() => ({
-        ...data,
+    setUser: (data) =>
+      set((state) => ({
+        ...state,
+        ...data, // merge w/o overwriting everything
       })),
-    setLoginUser: (data) =>
-      set(() => ({
-        ...data,
-      })),
+    resetUser: () => set(defaultInitState), //reset user to default values i.e. "" after log out.
   }));
 };

@@ -18,7 +18,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Label } from "@gtdraw/ui/components/label";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import VerifyCode from "./verify-code";
 import { MailType } from "@gtdraw/common/types/";
 import ResetPass from "./reset-password";
@@ -80,7 +80,7 @@ export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { username, fullName, email, avatar, setRegisterUser } = useUserStore(
+  const { username, fullName, email, avatar, setUser } = useUserStore(
     (state) => state
   );
 
@@ -116,16 +116,21 @@ export function RegisterForm() {
           },
           duration: 5000,
         });
-        setRegisterUser(response.data.data);
+        setUser({
+          username: response.data.data.username,
+          fullName: response.data.data.fullName,
+          email: response.data.data.email,
+          ...(response.data.data.avatar
+            ? { avatar: response.data.data.avatar }
+            : {}),
+        });
         setLoading(false);
       } else {
         toast.error("Sign Up Failed!", {
           description: response.data.message,
         });
       }
-
       console.log(response.data.data);
-      console.log("Printing User Name: ", username);
     } catch (error) {
       toast.error("Sign Up Failed!", {
         description: `${error}`,
@@ -136,6 +141,14 @@ export function RegisterForm() {
       );
     }
   };
+
+  //Helped to test wheather store was updating or not by clging username, have to use useEffect because of async nature of state updates(i.e. username is still old value and haven't re-render so to check by clging username we have to use useEffect)
+  // const formData = new FormData();
+
+  // useEffect(() => {
+  //   console.log("Printing User Name: ", username);
+  //   console.log("Updated store: ", username);
+  // }, [formData]);
 
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center min-h-screen px-4 overflow-auto">
@@ -382,7 +395,7 @@ export function LoginForm() {
   const {
     formState: { errors },
   } = form;
-  const { username, email, setLoginUser } = useUserStore((state) => state);
+  const { username, email, setUser } = useUserStore((state) => state);
 
   const onSubmitLoginHandler = async (data: LoginUserType) => {
     //send data to backend
