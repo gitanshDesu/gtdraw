@@ -6,6 +6,7 @@ import { UserStoreProvider } from "@/providers/user-store-provider";
 import { TanstackQueryProvider } from "@/providers/tanstack-query-provider";
 import { ModeToggle } from "@/components/DarkModeToggle";
 import { Toaster } from "@gtdraw/ui/components/sonner";
+import { ResetPassStoreProvider } from "@/providers/reset-pass-store-provider";
 const fontSans = Geist({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -27,12 +28,14 @@ export default function RootLayout({
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased overflow-hidden m-0 p-0`}
       >
         <UserStoreProvider>
-          <TanstackQueryProvider>
-            <Providers>
-              {children}
-              <Toaster position="top-center" />
-            </Providers>
-          </TanstackQueryProvider>
+          <ResetPassStoreProvider>
+            <TanstackQueryProvider>
+              <Providers>
+                {children}
+                <Toaster position="top-center" />
+              </Providers>
+            </TanstackQueryProvider>
+          </ResetPassStoreProvider>
         </UserStoreProvider>
       </body>
     </html>

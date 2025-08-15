@@ -404,15 +404,18 @@ export function LoginForm() {
         });
       }
       setUser(response.data.data);
+      if (response.data.success) {
+        router.push("/user/dashboard");
+      }
     } catch (error) {
       console.error("Error Occurred while Signing in: ", error);
     }
   };
 
-  const formData = new FormData();
-  useEffect(() => {
-    console.log("updated store: ", username);
-  }, [formData]);
+  // const formData = new FormData();
+  // useEffect(() => {
+  //   console.log("updated store: ", username);
+  // }, [formData]);
 
   const [showForgotPass, setShowForgotPass] = useState(false);
   const [showResetPass, setShowResetPass] = useState(false);

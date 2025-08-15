@@ -93,7 +93,9 @@ function VerifyEmail({
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" type="button">
+                Cancel
+              </Button>
             </DialogClose>
             <Button
               disabled={loading}
@@ -132,7 +134,9 @@ function ResetPassword({ className }: { className?: string }) {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" type="button">
+                Cancel
+              </Button>
             </DialogClose>
             <Button type="submit" className={"cursor-pointer"}>
               Verify

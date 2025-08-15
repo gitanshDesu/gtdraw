@@ -349,7 +349,7 @@ export const resetRequest: ControllerType = asyncHandler(
       throw new CustomError(401, "User email not verified, verify your email!");
     }
     const response = await sendMail(email, MailType.RESET);
-    if (response) {
+    if (!response) {
       throw new CustomError(
         500,
         `Error Occurred while sending mail to request reset verification Code!`
